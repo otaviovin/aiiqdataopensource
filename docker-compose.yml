@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+
+  nginx:
+    image: nginxproxy/nginx-proxy:alpine
+    container_name: nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - nginx_certs:/etc/nginx/certs
+      - nginx_vhost:/etc/nginx/vhost.d
+      - nginx_html:/usr/share/nginx/html
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./timeout.conf:/etc/nginx/conf.d/timeout.conf:ro 
+    networks:
+      - aiiqdata_rede
+
+  letsencrypt:
+    image: nginxproxy/acme-companion
+    container_name: letsencrypt
+    restart: always
+    environment:
+      - NGINX_PROXY_CONTAINER=nginx
+      - DEFAULT_EMAIL=contact@aiiqdata.com
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - nginx_certs:/etc/nginx/certs
+      - nginx_vhost:/etc/nginx/vhost.d
+      - nginx_html:/usr/share/nginx/html
+    networks:
+      - aiiqdata_rede
+
+  aiiqdata_app:
+    build: .
+    image: aiiqdata-web
+    container_name: aiiqdata_app
+    restart: always
+    env_file: .env
+    ports:
+      - "5000"
+    depends_on:
+      - mongo
+    volumes:
+      - .:/app
+    networks:
+      - aiiqdata_rede
+    environment:
+      - VIRTUAL_HOST=aiiqdata.com
+      - VIRTUAL_PORT=5000
+      - LETSENCRYPT_HOST=aiiqdata.com
+      - LETSENCRYPT_EMAIL=contact@aiiqdata.com
+    command: gunicorn main:app --workers=1 --threads=2 --bind=0.0.0.0:5000 --timeout 3600 --access-logfile=- --error-logfile=-
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+
+  mongo:
+    image: mongo:latest
+    container_name: aiiqdata_mongo_db
+    restart: always
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: aiiqdataadmin
+      MONGO_INITDB_ROOT_PASSWORD: capacete2025
+    networks:
+      - aiiqdata_rede
+
+volumes:
+  mongo_data:
+  nginx_certs:
+  nginx_vhost:
+  nginx_html:
+
+networks:
+  aiiqdata_rede:
