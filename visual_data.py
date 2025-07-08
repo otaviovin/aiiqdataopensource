@@ -59,7 +59,13 @@ matplotlib.use('Agg')
 # Load environment variables from .env file
 load_dotenv()
 
+# Load MongoDB URI from environment variables
+MONGODB_URI = os.getenv("MONGODB_URI")
+if not MONGODB_URI:
+    raise ValueError("Error: MONGODB_URI not defined in .env file")  # Fail early if missing
 
+# Connect to MongoDB with TLS (SSL), ignoring certificate validation
+client = MongoClient(MONGODB_URI, tls=True, tlsAllowInvalidCertificates=True)
 
 # Define databases
 db_main = client['businessinfo'] 
