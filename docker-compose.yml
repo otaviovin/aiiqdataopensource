@@ -48,9 +48,9 @@ services:
     networks:
       - aiiqdata_rede
     environment:
-      - VIRTUAL_HOST=aiiqdata.com
+      - VIRTUAL_HOST=aiiqdata.com,www.aiiqdata.com
       - VIRTUAL_PORT=5000
-      - LETSENCRYPT_HOST=aiiqdata.com
+      - LETSENCRYPT_HOST=aiiqdata.com,www.aiiqdata.com
       - LETSENCRYPT_EMAIL=contact@aiiqdata.com
     command: gunicorn main:app --workers=1 --threads=2 --bind=0.0.0.0:5000 --timeout 3600 --access-logfile=- --error-logfile=-
     deploy:
