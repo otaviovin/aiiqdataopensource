@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Character encoding for proper text display -->
+    <meta charset="UTF-8">
+    <!-- Viewport settings for responsive design (to adapt the page for different devices) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Title of the page (this appears in the browser tab) -->
+    <title data-i18n="title">Error - AIIQ</title>
+    <!-- Including FontAwesome for icons -->
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        /* Style for the body: sets font, background color, and centers content */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8d7da; /* Light red background for the error page */
+            margin: 0; /* Removes default margin */
+            display: flex; /* Uses flexbox for layout */
+            justify-content: center; /* Centers content horizontally */
+            align-items: center; /* Centers content vertically */
+            height: 100vh; /* Full viewport height */
+        }
+
+        /* Style for the error container that holds the error message */
+        .error-container {
+            background-color: #ffffff; /* White background for the error box */
+            padding: 30px; /* Adds padding inside the container */
+            border-radius: 15px; /* Rounded corners */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+            text-align: center; /* Centers text within the container */
+            max-width: 400px; /* Maximum width of the error box */
+            width: 100%; /* Ensures it stretches to fit available space */
+        }
+
+        /* Style for the error icon: a warning symbol */
+        .error-icon {
+            font-size: 50px; /* Makes the icon large */
+            color: #dc3545; /* Red color for the icon */
+        }
+
+        /* Style for the main heading (h1) displaying the error title */
+        h1 {
+            color: #dc3545; /* Red color for the heading */
+            font-size: 22px; /* Font size for the heading */
+        }
+
+        /* Style for the paragraph containing additional error details */
+        p {
+            font-size: 16px; /* Sets font size */
+            color: #333; /* Dark text color for better readability */
+        }
+
+        /* Style for the error message text box */
+        .error-message {
+            background-color: #f8d7da; /* Light red background for the error message */
+            color: #721c24; /* Dark red text color for the message */
+            padding: 10px; /* Adds padding inside the message box */
+            border-radius: 15px; /* Rounded corners for the message box */
+            margin-top: 15px; /* Adds space above the message */
+            font-weight: bold; /* Makes the message bold */
+            word-wrap: break-word; /* Ensures the message wraps properly within the box */
+        }
+
+        /* Style for the "Back to Home" button */
+        .back-button {
+            display: inline-block; /* Makes the button inline with other content */
+            margin-top: 15px; /* Adds space above the button */
+            padding: 10px 15px; /* Adds padding inside the button */
+            background-color: #dc3545; /* Red background color for the button */
+            color: white; /* White text color */
+            text-decoration: none; /* Removes the underline from the link */
+            border-radius: 15px; /* Rounded corners for the button */
+        }
+
+        /* Hover effect for the button: darkens the red background when hovered */
+        .back-button:hover {
+            background-color: #bd2130; /* Darker red when the button is hovered */
+        }
+    </style>
+</head>
+<body>
+    <!-- The error container that holds the content of the error page -->
+    <div class="error-container">
+        <!-- Warning icon to visually represent an error -->
+        <div class="error-icon">⚠️</div>
+        <!-- Main heading that describes the error -->
+        <h1>An error occurred</h1>
+        <!-- Additional text explaining the error -->
+        <p>Unfortunately, something went wrong. Please try again.</p>
+        <!-- The error message dynamically inserted by a server-side framework (e.g., Flask) -->
+        <div class="error-message">{{ error_message }}</div>
+        <!-- Link to return to the homepage -->
+        <a href="/" class="back-button">Back to Home Page</a>
+    </div>
+
+    <script>
+
+
+    </script>
+
+</body>
+</html>

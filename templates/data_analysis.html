@@ -1,0 +1,2504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Analysis - AIIQ</title>
+    <!-- Including FontAwesome for icons -->
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        /* Style for the menu icon, which will trigger the side menu */
+        .menu-icon {
+            font-size: 20px;
+            color: #1465bb; /* Blue color for the icon */
+            cursor: pointer; /* Make the icon clickable */
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 10;
+        }
+
+        /* Style for the side menu */
+        .side-menu {
+            height: 100%; /* Make the side menu full height */
+            width: 0; /* Initially hidden */
+            position: fixed; /* Fixed position so it stays in place */
+            z-index: 2; /* Ensure the menu appears above other content */
+            top: 0;
+            left: 0;
+            background-color: #cce5ff; /* Light blue background color */
+            overflow-x: hidden; /* Hide horizontal overflow */
+            transition: 0.3s; /* Smooth transition when opening/closing */
+            padding-top: 20px; /* Space for header */
+            display: flex;
+            flex-direction: column; /* Stack the items vertically */
+        }
+
+        /* Style for links and buttons in the side menu */
+        .side-menu a, .side-menu button {
+            padding: 10px 20px;
+            text-decoration: none;
+            font-size: 14px;
+            color: #08397a; /* Dark blue text color */
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            background: none;
+            border: none;
+            text-align: left;
+            cursor: pointer;
+            transition: background-color 0.3s; /* Smooth hover effect */
+        }
+
+        /* Add space between the icon and text */
+        .side-menu a i, .side-menu button i {
+            margin-right: 8px; /* Space between icon and text */
+            margin-left: 8px; /* Space before the icon */
+            font-size: 10px; /* Smaller icon size */
+        }
+
+        /* Hover effect for side menu items */
+        .side-menu a:hover, .side-menu button:hover {
+            background-color: #99c2ff; /* Light blue background on hover */
+        }
+
+        .btn {
+            width: 250px !important;
+        }
+
+        /* Header styles, including title positioning and color */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: white;
+            color: #1465bb; /* Blue color for text */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 1;
+        }
+
+        .header h1 {
+            flex-grow: 1;
+            text-align: center;
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .header .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .container {
+            max-width: 95%;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            background-color: #1465bb;
+            color: white;
+            font-size: 16px;
+            border-radius: 15px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: inline-block;
+            margin-top: 15px;
+        }
+
+        .btn:hover {
+            background-color: #104a91;
+        }
+
+        .user-details {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            text-align: left !important; 
+            font-size: 14px;
+            color: white;
+        }
+
+        .user-details p {
+            margin: 5px 0;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        /* New chat-like textarea styling */
+        .chat-container {
+            width: 100%;
+            max-width: 96%;
+            margin: 10px;
+            border-radius: 15px;
+            background: #f8f9fa;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .explain-container {
+            width: 100%;
+            max-width: 96%;
+            margin: 10px;
+            border-radius: 15px;
+            background: #f8f9fa;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .chat-header {
+            text-align: left;
+            font-weight: bold;
+            color: #1465bb;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .explain-header {
+            text-align: left;
+            font-weight: bold;
+            color: #1465bb;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .chat-input-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        textarea {
+            width: 100%; 
+            max-width: 100%;
+            height: 60px;
+            font-size: 14px;
+            border-radius: 15px;
+            resize: none;
+            box-sizing: border-box; 
+            margin-bottom: 10px;
+        }
+
+        #user_input {
+            padding: 10px 60px 10px 60px;
+            border: 1px solid #ddd;
+            background-color: white;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        #textarea-histogramwithkde,
+        #textarea-boxplot,
+        #textarea-correlationmatrix,
+        #textarea-scatterplot,
+        #textarea-linechart,
+        #textarea-piechart,
+        #textarea-olap-slice-dice,
+        #textarea-olap-drilldown,
+        #textarea-olap-pivot {
+            padding: 10px 60px 10px 60px;
+            border: none;
+            border: 1px solid #ddd;
+            background-color: #ddd;
+            align-items: center;
+            padding-top: 20px;
+        }
+
+        #textarea-histogramwithkde:focus,
+        #textarea-boxplot:focus,
+        #textarea-correlationmatrix:focus,
+        #textarea-scatterplot:focus,
+        #textarea-linechart:focus,
+        #textarea-piechart:focus,
+        #textarea-olap-slice-dice:focus,
+        #textarea-olap-drilldown:focus,
+        #textarea-olap-pivot:focus {
+            outline: none;
+            box-shadow: none;
+        }
+
+        .send-btn {
+            position: absolute;
+            right: 10px;
+            bottom: 25px;
+            background: #1465bb;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .send-btn:hover {
+            background-color: #104a91;
+        }
+
+        .generate-histogramwithkde-btn,
+        .generate-boxplot-btn,
+        .generate-correlationmatrix-btn,
+        .generate-scatterplot-btn,
+        .generate-linechart-btn,
+        .generate-piechart-btn,
+        .generate-olap-slice-dice-btn,
+        .generate-olap-drilldown-btn,
+        .generate-olap-pivot-btn  {
+            position: absolute;
+            right: 10px;
+            bottom: 25px;
+            background: #1465bb;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .generate-histogramwithkde-btn:hover,
+        .generate-boxplot-btn:hover,
+        .generate-correlationmatrix-btn:hover,
+        .generate-scatterplot-btn:hover,
+        .generate-linechart-btn:hover,
+        .generate-piechart-btn:hover,
+        .generate-olap-slice-dice-btn:hover,
+        .generate-olap-drilldown-btn:hover,
+        .generate-olap-pivot-btn:hover {
+            background-color: #104a91;
+        }
+
+        .attach-btn {
+            position: absolute;
+            left: 10px;
+            bottom: 25px;
+            background: #1465bb;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .attach-btn:hover {
+            background-color: #104a91;
+        }
+
+        .histogramwithkde-attach-btn,
+        .boxplot-attach-btn,
+        .correlationmatrix-attach-btn,
+        .scatterplot-attach-btn,
+        .linechart-attach-btn,
+        .piechart-attach-btn,
+        .olap-slice-dice-attach-btn,
+        .olap-drilldown-attach-btn,
+        .olap-pivot-attach-btn {
+            position: absolute;
+            left: 10px;
+            bottom: 25px;
+            background: #1465bb;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .histogramwithkde-attach-btn:hover,
+        .boxplot-attach-btn:hover,
+        .correlationmatrix-attach-btn:hover,
+        .scatterplot-attach-btn:hover,
+        .linechart-attach-btn:hover,
+        .piechart-attach-btn:hover,
+        .olap-slice-dice-attach-btn:hover,
+        .olap-drilldown-attach-btn:hover,
+        .olap-pivot-attach-btn:hover {
+            background-color: #104a91;
+        }
+
+        .upload-area {
+            display: none;
+            width: 100%;
+            max-width: 99%;
+            margin: 10px;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            background-color: #f4f4f9;
+            transition: background-color 0.3s;
+        }
+
+        .upload-area:hover {
+            background-color: #e0ebff;
+        }
+
+        .upload-area p {
+            font-size: 16px;
+            color: #08397a;
+            margin: 10px 0;
+        }
+
+        .upload-area {
+            width: 100%;
+        }
+
+        .upload-area-histogramwithkde,
+        .upload-area-boxplot,
+        .upload-area-correlationmatrix,
+        .upload-area-scatterplot,
+        .upload-area-linechart,
+        .upload-area-piechart,
+        .upload-area-olap-slice-dice,
+        .upload-area-olap-drilldown,
+        .upload-area-olap-pivot {
+            display: none;
+            width: 100%;
+            max-width: 99%;
+            margin: 10px;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            background-color: #f4f4f9;
+            transition: background-color 0.3s;
+        }
+
+        .upload-area-histogramwithkde p,
+        .upload-area-boxplot p,
+        .upload-area-correlationmatrix p,
+        .upload-area-scatterplot p,
+        .upload-area-linechart p,
+        .upload-area-piechart p,
+        .upload-area-olap-slice-dice p,
+        .upload-area-olap-drilldown p,
+        .upload-area-olap-pivot p {
+            font-size: 16px;
+            color: #08397a;
+            margin: 10px 0;
+        }
+
+        .upload-area-histogramwithkde,
+        .upload-area-boxplot,
+        .upload-area-correlationmatrix,
+        .upload-area-scatterplot,
+        .upload-area-linechart,
+        .upload-area-piechart,
+        .upload-area-olap-slice-dice,
+        .upload-area-olap-drilldown,
+        .upload-area-olap-pivot {
+            width: 100%;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        #fileInput-histogramwithkde,
+        #fileInput-boxplot,
+        #fileInput-correlationmatrix,
+        #fileInput-scatterplot,
+        #fileInput-linechart,
+        #fileInput-piechart,
+        #fileInput-olap-slice-dice,
+        #fileInput-olap-drilldown,
+        #fileInput-olap-pivot {
+            display: none;
+        }
+
+        /* Adicionando estilo para o SVG no topo do menu lateral */
+        .menu-logo {
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Ajusta a largura e a altura do SVG */
+        .menu-logo svg {
+            width: 100%;  /* Largura do logo */
+            height: 30px;  /* Altura do logo */
+        }
+
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); /* Escurecimento da tela */
+            display: none; /* Inicialmente oculto */
+            z-index: 9999; /* Garante que o overlay fique acima de outros elementos */
+        }
+
+        /* Estilização da tela de carregamento */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+
+        .loading-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 18px;
+            color: #1465bb;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .loading-box i {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+
+        #charLimitMsg {
+            font-size: 12px;
+            color: #666;
+            text-align: right;
+            width: 100%;
+            margin-top: -15px;
+            margin-bottom: 10px;
+        }
+
+        /* Chat bubble styling for potential future messages */
+        .message {
+            max-width: 80%;
+            padding: 10px 15px;
+            margin: 5px 0;
+            border-radius: 18px;
+            line-height: 1.4;
+            position: relative;
+        }
+
+        .user-message {
+            background: #1465bb;
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+
+        .bot-message {
+            background: #e5e5ea;
+            color: black;
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+        }
+
+        .file-status {
+            width: 12%;
+            box-sizing: border-box;
+            color: green;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-status-histogramwithkde,
+        .file-status-boxplot,
+        .file-status-correlationmatrix,
+        .file-status-scatterplot,
+        .file-status-linechart,
+        .file-status-piechart,
+        .file-status-olap-slice-dice,
+        .file-status-olap-drilldown,
+        .file-status-olap-pivot {
+            width: 12%;
+            box-sizing: border-box;
+            color: green;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-name {
+            width: 64%;
+            box-sizing: border-box;
+            font-weight: bold;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .file-lines,
+        .file-columns {
+            width: 10%;
+            box-sizing: border-box;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-close {
+            width: 4%;
+            box-sizing: border-box;
+            color: red;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-close:hover {
+            color: darkred;
+        }
+
+        .file-upload-wrapper {
+            display: flex;
+            width: 100%;
+            box-sizing: border-box;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0;
+            padding: 20px 10px 20px 10px;
+        }
+
+        .file-upload-wrapper > div {
+            box-sizing: border-box;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        /* Table container */
+        .csv-header {
+            text-align: left;
+            background-color: white;
+            color: #1465bb;
+            padding: 15px 0px 0px 0px;
+            border-bottom: 1px solid #e0e0e0;
+            max-height: 250px;  /* adjust as needed */
+            overflow-y: auto;
+            overflow-x: auto;
+            border: 1px solid #ccc;
+            margin-top: 10px;
+        }
+
+        .csv-header table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .csv-header th,
+        .csv-header td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            white-space: nowrap; /* Prevent text from wrapping */
+        }
+
+        .csv-header thead {
+            position: sticky;
+            top: 0;
+            background-color: #f9f9f9;
+            z-index: 1;
+        }
+
+        .csv-header-histogramwithkde,
+        .csv-header-boxplot,
+        .csv-header-correlationmatrix,
+        .csv-header-scatterplot,
+        .csv-header-linechart,
+        .csv-header-piechart,
+        .csv-header-olap-slice-dice,
+        .csv-header-olap-drilldown,
+        .csv-header-olap-pivot {
+            text-align: left;
+            background-color: white;
+            color: #1465bb;
+            padding: 15px 0px 0px 0px;
+            border-bottom: 1px solid #e0e0e0;
+            max-height: 250px;  /* adjust as needed */
+            overflow-y: auto;
+            overflow-x: auto;
+            border: 1px solid #ccc;
+            margin-top: 10px;
+        }
+
+        .csv-header-histogramwithkde table,
+        .csv-header-boxplot table,
+        .csv-header-correlationmatrix table,
+        .csv-header-scatterplot table,
+        .csv-header-linechart table,
+        .csv-header-piechart table,
+        .csv-header-olap-slice-dice table,
+        .csv-header-olap-drilldown table,
+        .csv-header-olap-pivot table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .csv-header-histogramwithkde th,
+        .csv-header-histogramwithkde td,
+        .csv-header-boxplot th,
+        .csv-header-boxplot td,
+        .csv-header-correlationmatrix th,
+        .csv-header-correlationmatrix td,
+        .csv-header-scatterplot th,
+        .csv-header-scatterplot td,
+        .csv-header-linechart th,
+        .csv-header-linechart td,
+        .csv-header-piechart th,
+        .csv-header-piechart td,
+        .csv-header-olap-slice-dice th,
+        .csv-header-olap-slice-dice td,
+        .csv-header-olap-drilldown th,
+        .csv-header-olap-drilldown td,
+        .csv-header-olap-pivot th,
+        .csv-header-olap-pivot td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            white-space: nowrap; /* Prevent text from wrapping */
+        }
+
+        .csv-header-histogramwithkde thead,
+        .csv-header-boxplot thead,
+        .csv-header-correlationmatrix thead,
+        .csv-header-scatterplot thead,
+        .csv-header-linechart thead,
+        .csv-header-piechart thead,
+        .csv-header-olap-slice-dice thead,
+        .csv-header-olap-drilldown thead,
+        .csv-header-olap-pivot thead {
+            position: sticky;
+            top: 0;
+            background-color: #f9f9f9;
+            z-index: 1;
+        }
+
+        /* Table styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #f4f4f9; /* Light gray background */
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 15px 10px 15px 10px;
+        }
+
+        table th {
+            background-color: #1465bb; /* Blue background for header */
+            color: #fff; /* White text */
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        /* Table body styling */
+        table td {
+            background-color: #f4f4f9; /* Light gray background for rows */
+            color: #08397a; /* Dark blue text */
+            padding: 10px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd; /* Light gray border between rows */
+        }
+
+        /* First column styling (optional) */
+        table td:first-child,
+        table th:first-child {
+            font-weight: bold;
+        }
+
+        /* Styling for alternate row colors (striped effect) */
+        table tr:nth-child(even) td {
+            background-color: #e0e7ff; /* Light blue for alternate rows */
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            height: 85%;
+            max-height: 85%;
+            background-color: var(--color-white);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            background-color: #f0f8ff;
+        }
+
+        .feature-card .icon {
+            color: var(--color-primary);
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-card p {
+            color: #666;
+        }
+
+        .menu-container {
+            width: 100%;
+            max-width: 96%;
+            margin: 10px;
+            border-radius: 15px;
+            background: #f8f9fa;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .content-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+            max-width: 96%;
+            margin: 10px;
+            border-radius: 15px;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+
+        .content-container p {
+            margin: 0;
+            line-height: 1.5;
+            font-size: 16px;
+        }
+
+        .content-text-container {
+            text-align: left;
+            width: 100%;
+            max-width: 96%;
+            margin: 10px;
+            border-radius: 15px;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+
+        .menu-header {
+            text-align: left;
+            font-weight: bold;
+            color: #1465bb;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .title-header {
+            text-align: left;
+            font-weight: bold;
+            color: #1465bb;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 30px;
+        }
+
+        .spacer {
+            height: 10px;
+        }
+
+        .menu-section {
+            margin-top: 5px;
+            padding-top: 10px;
+            border-bottom: 1px solid #90caf9; /* azul claro */
+        }
+
+        .menu-label {
+            text-align: left;
+            font-size: 12px;
+            color: #90caf9; /* azul um pouco mais vibrante */
+            margin-bottom: 5px;
+            padding-left: 10px;
+        }
+
+        .result-histogramwithkde,
+        .result-boxplot,
+        .result-correlationmatrix,
+        .result-scatterplot,
+        .result-linechart,
+        .result-piechart,
+        .result-olap-slice-dice,
+        .result-olap-drilldown,
+        .result-olap-pivot {
+            margin: 10px;
+            width: 100%;
+            max-width: 97%;
+            max-height: 620px;
+            overflow: auto;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 10px;
+            background-color: #fdfdfd;
+            position: relative;
+        }
+
+        .result-histogramwithkde img,
+        .result-boxplot img,
+        .result-correlationmatrix img,
+        .result-scatterplot img,
+        .result-linechart img,
+        .result-piechart img,
+        .result-olap-slice-dice img,
+        .result-olap-drilldown img,
+        .result-olap-pivot img {
+            max-width: none;
+            max-height: none;
+            width: auto;
+            height: auto;
+            transform-origin: top left;
+            transition: transform 0.2s ease-in-out;
+            cursor: zoom-in;
+        }
+
+        .menu-dropdown {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .dropdown-toggle {
+            width: 100%;
+            text-align: left;
+            padding: 10px;
+            background: #f0f0f0;
+            border: none;
+            cursor: pointer;
+        }
+
+        .dropdown-toggle:hover {
+            background: #e0e0e0;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: relative;
+            flex-direction: column;
+            background-color: #ffffff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            z-index: 1;
+            margin-left: 10px;
+            border-radius: 15px;
+        }
+
+        .dropdown-menu button {
+            padding: 10px;
+            background-color: #fafafa;
+            border: none;
+            text-align: left;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .dropdown-menu button:hover {
+            background-color: #f0f0f0;
+        }
+
+        .buttons-container {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu-btn {
+            right: 10px;
+            bottom: 15px;
+            background: #1465bb;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .menu-btn:hover {
+            background-color: #104a91;
+        }
+
+        .back-btn {
+            right: 10px;
+            bottom: 15px;
+            background: #1465bb;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-btn:hover {
+            background-color: #104a91;
+        }
+
+        #observation-note {
+            font-size: 0.8em;
+            color: #555 !important;
+            margin-top: 5px;
+        }
+
+        .chat-body {
+            text-align: left;
+        }
+
+        .history-list {
+            padding-left: 0;
+            margin-left: 0;
+            text-align: left;
+        }
+
+        .history-list li {
+            color: #104a91;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            list-style-type: none;
+            text-align: left;
+        }
+
+        .history-form {
+            text-align: left;
+            width: 100%;
+        }
+
+        .history-form .history-button {
+            background: none;
+            border: none;
+            color: #104a91;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: left;
+        }
+
+        .history-button {
+            font-size: 16px;
+        }
+
+        .history-button:hover {
+            text-decoration: underline;
+            color: #0d356e;
+        }
+
+        .history-form em,
+        .history-form small {
+            display: block;
+            margin-left: 5px;
+        }
+
+        .history-content {
+            text-align: left;
+            width: 100%;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="overlay" class="overlay"></div>
+
+    <!-- Include Font Awesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- Icon to trigger the opening of the side menu -->
+    <span class="menu-icon" onclick="toggleMenu()">&#9776;</span>
+
+    <!-- Side Menu -->
+    <div id="sideMenu" class="side-menu">
+        <div class="menu-logo">
+            <svg width="150" height="30" xmlns="http://www.w3.org/2000/svg">
+                <style>
+                    .text {
+                        font: bold 24px 'Helvetica Neue', sans-serif; /* Reduzindo o tamanho da fonte */
+                    }
+                    .ai {
+                        fill: #1E90FF;
+                    }
+                    .iq {
+                        fill: #C0C0C0;
+                    }
+                </style>
+                <rect width="100%" height="100%" fill="none"/> <!-- Fundo transparente -->
+                <text x="50%" y="80%" class="text" text-anchor="middle" alignment-baseline="central">
+                    <tspan class="ai">AI</tspan><tspan class="iq">IQ</tspan>
+                </text>
+            </svg>            
+        </div>
+        
+        <!-- Informações do usuário no menu lateral -->
+        <div class="user-details">
+            <p><i class="fas fa-user"></i> User: {{ user_name }}</p>
+            <p><i class="fas fa-star"></i> Plan: {{ user_data.plantype.capitalize() if user_data and user_data.plantype else 'Unknown' }}</p>
+        </div>
+
+        <!-- Workspace Section -->
+        <div class="menu-section">
+            <div class="menu-label">Workspace</div>
+            <!-- Button to navigate to the chatbot page -->
+            <button onclick="navigateTo('{{ url_for('chatbot') }}')">
+                <i class="fas fa-comments"></i> Chat
+            </button>
+            <button onclick="navigateTo('{{ url_for('index') }}')">
+                <i class="fas fa-home"></i> Menu
+            </button>
+            <!-- Data Analysis Dashboard - with submenu -->
+            <div class="menu-dropdown">
+                <button class="dropdown-toggle">
+                    <i class="fas fa-chart-area"></i> Data Dashboard ▾
+                </button>
+                <div class="dropdown-menu">
+                    <button onclick="navigateTo('{{ url_for('visual_data_googlesheets') }}')">Google Sheets</button>
+                    <button onclick="navigateTo('{{ url_for('visual_data') }}')">Upload CSV</button>
+                </div>
+            </div>
+            <!-- Button to navigate to the admin settings page (only visible if the user is an admin) -->
+            {% if is_admin %}
+                <button onclick="navigateTo('{{ url_for('admin') }}')">
+                    <i class="fas fa-cogs"></i> Settings
+                </button>
+            {% endif %}
+            <button onclick="navigateTo('{{ url_for('view_news', business_id=business_id, page=1) }}')">
+                <i class="fas fa-newspaper"></i> News
+            </button>
+            <button onclick="navigateTo('{{ url_for('notebook') }}')">
+                <i class="fas fa-book"></i> Notebook
+            </button>
+        </div>
+        
+        <!-- Help Section -->
+        <div class="menu-section">
+            <div class="menu-label">Help</div>
+            <!-- Button to help -->
+            <button onclick="window.open('{{ url_for('help') }}', '_blank')">
+                <i class="fas fa-question-circle"></i> Help
+            </button>
+        </div>
+
+        <!-- Exit Section -->
+        <div class="menu-section">
+            <div class="menu-label">Exit</div>
+            <!-- Button to log out of the system -->
+            <button onclick="navigateTo('{{ url_for('logout') }}')">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+            <!-- Button to close the side menu -->
+            <button onclick="closeMenu()">
+                <i class="fas fa-times"></i> Close
+            </button>
+        </div>
+    </div>
+
+    <!-- Header Section -->
+    <div class="header">
+        <div class="menu-logo">
+            <a href="/index" class="logo-link">
+                <svg width="150" height="30" xmlns="http://www.w3.org/2000/svg">
+                    <style>
+                        .text {
+                            font: bold 24px 'Helvetica Neue', sans-serif; /* Reduzindo o tamanho da fonte */
+                        }
+                        .ai {
+                            fill: #1E90FF;
+                        }
+                        .iq {
+                            fill: #C0C0C0;
+                        }
+                        .logo-link:hover .ai {
+                            fill: #104E8B;
+                        }
+                        .logo-link:hover .iq {
+                            fill: #808080;
+                        }
+                    </style>
+                    <rect width="100%" height="100%" fill="none"/> <!-- Fundo transparente -->
+                    <text x="50%" y="80%" class="text" text-anchor="middle" alignment-baseline="central">
+                        <tspan class="ai">AI</tspan><tspan class="iq">IQ</tspan>
+                    </text>
+                </svg>
+            </a>           
+        </div>
+    </div>
+
+    <div class="container">
+        <form id="csvForm" enctype="multipart/form-data" method="POST" action="/data_analysis_result">
+            <div class="chat-container">
+                <div class="chat-header">Describe your data analysis request</div>
+                
+                <div class="chat-input-container">
+                    <button type="button" class="attach-btn" title="Attach File" onclick="triggerFileUpload('fileInput')">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
+                    <textarea id="user_input" name="user_input" rows="4" maxlength="200" oninput="updateCharCount()" placeholder="The attached file shows the relationship between columns X and Y..." required></textarea>
+                    <button type="submit" class="send-btn" title="Start Analysis">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                    <p id="charLimitMsg"><span id="char_count">0</span>/200</p>
+                </div>
+            </div>
+
+            <div class="upload-area" id="drop-area" data-input-id="fileInput" data-name-id="file-name" data-lines-id="file-lines" data-columns-id="file-columns" data-close-id="file-close">
+                <div class="file-upload-wrapper">
+                    <span id="file-status" class="file-status" style="color: green;">
+                        <i class="fas fa-check-circle"></i> File uploaded
+                    </span>
+                    <input type="file" id="fileInput" name="fileInput" accept=".csv" required>
+                    <span id="file-name" class="file-name" style="margin-left: 10px; font-weight: bold;"></span>
+                    <span id="file-lines" class="file-lines">Lines: </span>
+                    <span id="file-columns" class="file-columns">Columns: </span>
+                    <span id="file-close" class="file-close"><strong>x</strong></span>
+                </div>
+                <div class="csv-header">
+                </div>
+                <p id="observation-note" class="observation-note">
+                    <strong>Note:</strong> Only the first 50 rows are shown for visualization purposes.
+                </p>      
+            </div>
+        </form>
+    </div>
+
+    <div class="container">
+        <div class="chat-container">
+            <div class="chat-header">History data analysis request</div>
+            <div class="chat-body">
+                {% if csv_history %}
+                    <ul class="history-list">
+                        {% for item in csv_history %}
+                            <li>
+                                <form method="POST" action="{{ url_for('data_analysis_result') }}" class="history-form">
+                                    <div class="history-content">
+                                        <!-- Enviar identificador do histórico -->
+                                        <input type="hidden" name="history_id" value="{{ item._id }}">
+                                        <input type="hidden" name="history_name" value="{{ item.file_name }}">
+                                        <input type="hidden" name="created_at" value="{{ item.created_at.strftime('%Y-%m-%d %H:%M:%S') }}">
+                                        <input type="hidden" name="source_page" value="data_analysis">
+                                        
+                                        <!-- Título clicável -->
+                                        <button type="submit" class="history-button" title="{{ item.file_name }}">
+                                            {{ item.file_name[:150] }}{% if item.file_name|length > 150 %}...{% endif %}
+                                        </button>
+
+                                        <em><strong>input:</strong> {{ item.user_input[:180] }}{% if item.user_input|length > 180 %}...{% endif %}</em>
+                                        <small><strong>id:</strong> {{ item._id }}</small>
+                                        <small><strong>created at:</strong> {{ item.created_at.strftime("%Y-%m-%d %H:%M:%S") }}</small>
+                                    </div>
+                                </form>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No history found.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="explain-container">
+            <div class="explain-header">How to analyse data
+                <div class="features-grid">
+                    <div class="container">
+                        <div class="feature-card" onclick="toggleDropdown(this)" data-section="histogramwithkde">
+                            <img src="/static/histogramwithkde.svg" width="48" height="48" class="icon" alt="Histogram with KDE Icon">
+                            <h3>Histogram with KDE</h3>
+                            <p>This chart displays the distribution of a numerical variable, showing the frequency of values along the X-axis and the intensity of that frequency on the Y-axis.</p>
+                        </div>
+                    </div>
+                    <div class="container">
+                        <div class="feature-card" onclick="toggleDropdown(this)" data-section="boxplot">
+                            <img src="/static/boxplot.svg" width="48" height="48" class="icon" alt="Boxplot Icon">
+                            <h3>Boxplot</h3>
+                            <p>The boxplot illustrates the data distribution across quartiles, highlighting the median, interquartile range, and any outliers.</p>
+                        </div>
+                    </div>
+                    <div class="container">
+                        <div class="feature-card" onclick="toggleDropdown(this)" data-section="correlationmatrix">
+                            <img src="/static/correlationmatrix.svg" width="48" height="48" class="icon" alt="Correlation Matrix Icon">
+                            <h3>Correlation Matrix</h3>
+                            <p>This chart shows how numerical variables correlate with each other.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="features-grid">
+                    <div class="container">
+                        <div class="feature-card" onclick="toggleDropdown(this)" data-section="scatterplot">
+                            <img src="/static/scatterplot.svg" width="48" height="48" class="icon" alt="Scatter Plot Icon">
+                            <h3>Scatter Plot</h3>
+                            <p>This chart shows the bivariate relationship between two numerical variables and the distribution of their values on the Cartesian plane.</p>
+                        </div>
+                    </div>
+                    <div class="container">
+                        <div class="feature-card" onclick="toggleDropdown(this)" data-section="linechart">
+                            <img src="/static/linechart.svg" width="48" height="48" class="icon" alt="Line Chart Icon">
+                            <h3>Line Chart</h3>
+                            <p>This chart displays the progression of a variable over the index, useful for identifying trends, seasonality, or time-based patterns.</p>
+                        </div>
+                    </div>
+                    <div class="container">
+                        <div class="feature-card" onclick="toggleDropdown(this)" data-section="piechart">
+                            <img src="/static/piechart.svg" width="48" height="48" class="icon" alt="Pie Chart Icon">
+                            <h3>Pie Chart</h3>
+                            <p>This chart displays the proportional distribution of categories within the specified column variable.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="features-grid"> 
+                    <!-- OLAP Slice and Dice -->
+                    <div class="container">
+                        <div class="feature-card" onclick="toggleDropdown(this)" data-section="olap-slice-dice">
+                            <img src="/static/olap_slice_dice.svg" width="48" height="48" class="icon" alt="OLAP Slice and Dice Icon">
+                            <h3>OLAP Slice and Dice</h3>
+                            <p>Explore the dataset by slicing it along one dimension or dicing it into sub-cubes to analyze patterns and trends from different angles.</p>
+                        </div>
+                    </div>
+
+                    <!-- OLAP Drill Down -->
+                    <div class="container">
+                        <div class="feature-card" onclick="toggleDropdown(this)" data-section="olap-drilldown">
+                            <img src="/static/olap_drilldown.svg" width="48" height="48" class="icon" alt="OLAP Drill Down Icon">
+                            <h3>OLAP Drill Down</h3>
+                            <p>Navigate deeper into the data hierarchy to reveal more detailed insights and uncover fine-grained trends.</p>
+                        </div>
+                    </div>
+
+                    <!-- OLAP Pivot -->
+                    <div class="container">
+                        <div class="feature-card" onclick="toggleDropdown(this)" data-section="olap-pivot">
+                            <img src="/static/olap_pivot.svg" width="48" height="48" class="icon" alt="OLAP Pivot Icon">
+                            <h3>OLAP Pivot</h3>
+                            <p>Reorient the data dimensions to look at the dataset from different perspectives, enabling more flexible reporting and analysis.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-container">
+            <div class="buttons-container">
+                <button class="menu-btn" title="Home" onclick="window.location.href='{{ url_for('index') }}'">
+                    <i class="fas fa-home"></i>
+                </button>
+                <button class="back-btn" title="Back" onclick="window.location.href='{{ url_for('index') }}'">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-histogramwithkde" style="display: none;">
+        <div class="container">
+            <div class="menu-container">   
+                <label for="histogramwithkde" class="title-header">Histogram with KDE</label>
+                <div class="content-container">
+                    <img src="/static/histogramwithkde.svg" width="300" height="300" class="icon" alt="Histogram with KDE Icon">
+                    <div class="content-text-container">
+                        <p>A Histogram with Kernel Density Estimation (KDE) is a powerful data visualization tool in the field of data analysis, combining two complementary approaches to understand the distribution of a dataset: the histogram and the KDE plot.</p>
+                        <p class="spacer"></p>
+                        <p><strong>Histogram</strong></p>
+                        <p class="spacer"></p>
+                        <p>A histogram is a type of bar chart that represents the frequency distribution of a set of continuous or discrete numerical data. The data is grouped into ranges (called bins), and each bar in the histogram represents the number of data points that fall within a specific bin.</p>
+                    </div>
+                </div>
+
+                <div class="content-container">
+                    <div class="content-text-container">
+                        <p>Histograms are particularly useful for:</p>
+                        <ul>
+                            <li>Visualizing the shape of the data distribution (e.g., normal, skewed, bimodal).</li>
+                            <li>Identifying central tendencies and variability.</li>
+                            <li>Detecting outliers and gaps in the data.</li>
+                            <li>Comparing frequency patterns across different datasets.</li>
+                        </ul>
+                        <p>However, histograms are sensitive to bin width and bin alignment. Choosing too few bins can oversimplify the data, while too many can make the plot noisy or misleading.</p>
+                        <p class="spacer"></p>
+                        <p>KDE (Kernel Density Estimation)</p>
+                        <p class="spacer"></p>
+                        <p>KDE is a non-parametric way to estimate the probability density function (PDF) of a random variable. Instead of counting values in fixed bins, KDE places a smooth curve (kernel function, typically Gaussian) over each data point and adds them up to form a continuous estimate of the data distribution.</p>
+                        <p class="spacer"></p>
+                        <p>KDE is valuable for:</p>
+                        <ul>
+                            <li>Smoothing out noise and providing a clearer view of the data distribution.</li>
+                            <li>Highlighting the underlying structure in the data (e.g., multiple peaks in bimodal distributions).</li>
+                            <li>Offering a more accurate representation of the PDF, especially when compared to discrete binning.</li>
+                        </ul>
+                        <p>Combining Histogram and KDE</p>
+                        <p class="spacer"></p>
+                        <p>When both the histogram and KDE are plotted together:</p>
+                        <ul>
+                            <li>The histogram provides a visual summary of raw data frequency.</li>
+                            <li>The KDE line smooths over that summary to illustrate the underlying distribution.</li>
+                        </ul>
+                        <p>This combination is particularly useful because it:</p>
+                        <ul>
+                            <li>Bridges discrete and continuous views of data.</li>
+                            <li>Allows analysts to validate KDE shapes against actual frequencies.</li>
+                            <li>Helps in making informed choices for statistical modeling and hypothesis testing.</li>
+                            <li>Enhances understanding of distribution characteristics like skewness, modality, and spread.</li>
+                            <li>Facilitates comparison between multiple distributions, such as across categories or groups.</li>
+                        </ul>
+                        <p>Use Cases in Data Analysis</p>
+                        <ul>
+                            <li>Exploratory Data Analysis (EDA): Helps analysts understand the shape, central tendency, and variability of variables before modeling.</li>
+                            <li>Feature Engineering: Identifying transformation needs (e.g., normalization or log-scaling).</li>
+                            <li>Anomaly Detection: Spotting unusual observations far from the KDE peak.</li>
+                            <li>Comparative Studies: Overlaying multiple KDEs to see how distributions vary across segments or over time.</li>
+                        </ul>
+                        <p>Interpretation Tips</p>
+                        <ul>
+                            <li>The height of KDE does not represent count, but density — the area under the KDE curve sums to 1.</li>
+                            <li>In multimodal distributions, KDE highlights multiple peaks that a histogram may miss or obscure.</li>
+                            <li>A well-matched KDE and histogram indicates a good fit of the density estimate to the actual data.</li>
+                            <li>For skewed data, KDE offers a more accurate depiction than symmetric histograms.</li>
+                        </ul>
+                        <p>In summary, a Histogram with KDE is a vital chart in data analysis because it merges the clarity of frequency distribution with the smoothness of density estimation. It enhances insight, supports decision-making, and underpins many foundational techniques in statistical and machine learning workflows. By combining raw frequency and continuous estimation, this dual-plot provides a richer, more nuanced understanding of the data.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="menu-container">
+                <div class="chat-header">Generate your Histogram with KDE</div>
+                
+                <form id="form-histogramwithkde" enctype="multipart/form-data">
+                    <div class="chat-input-container">
+                        <button type="button" class="histogramwithkde-attach-btn" title="Attach File for Histogram with KDE" onclick="triggerFileUpload('fileInput-histogramwithkde')">
+                            <i class="fas fa-paperclip"></i>
+                        </button>
+                        <textarea id="textarea-histogramwithkde" name="textarea-histogramwithkde" readonly> Attach a file and click Run to show the Histogram with KDE below</textarea>
+                        <button type="submit" class="generate-histogramwithkde-btn" title="Generate Histogram with KDE Data analisys">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+
+                    <div class="upload-area-histogramwithkde" id="drop-area-histogramwithkde" data-input-id="fileInput-histogramwithkde" data-name-id="file-name-histogramwithkde" data-lines-id="file-lines-histogramwithkde" data-columns-id="file-columns-histogramwithkde" data-close-id="file-close-histogramwithkde">
+                        <div class="file-upload-wrapper">
+                            <span id="file-status-histogramwithkde" class="file-status" style="color: green;">
+                                <i class="fas fa-check-circle"></i> File uploaded
+                            </span>
+                            <input type="file" id="fileInput-histogramwithkde" name="fileInput-histogramwithkde" accept=".csv" required>
+                            <span id="file-name-histogramwithkde" class="file-name" style="margin-left: 10px; font-weight: bold;"></span>
+                            <span id="file-lines-histogramwithkde" class="file-lines">Lines: </span>
+                            <span id="file-columns-histogramwithkde" class="file-columns">Columns: </span>
+                            <span id="file-close-histogramwithkde" class="file-close"><strong>x</strong></span>
+                        </div>
+
+                        <div class="csv-header-histogramwithkde">
+                        </div>
+                        <p id="observation-note" class="observation-note">
+                            <strong>Note:</strong> Only the first 50 rows are shown for visualization purposes.
+                        </p>      
+                        
+                        <div id="result-histogramwithkde" class="result-histogramwithkde">
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-boxplot" style="display: none;">
+        <div class="container">
+            <div class="menu-container">     
+                <label for="boxplot" class="title-header">Boxplot</label>
+                <div class="content-container">
+                    <img src="/static/boxplot.svg" width="300" height="300" class="icon" alt="Boxplot Icon">
+                    <div class="content-text-container">
+                        <p>A Boxplot, also known as a box-and-whisker plot, is a standardized way of displaying the distribution of data based on a five-number summary: minimum, first quartile (Q1), median (Q2), third quartile (Q3), and maximum.</p>
+                        <p>It is an essential visualization in data analysis for understanding spread, central tendency, and outliers within a dataset.</p>
+                        <p class="spacer"></p>
+                        <p><strong>Boxplot Elements</strong></p>
+                        <p class="spacer"></p>
+                        <p>A typical boxplot consists of a rectangular box (the interquartile range), a line inside the box (the median), and whiskers that extend to the smallest and largest values within 1.5 times the IQR. Points beyond this range are plotted as individual outliers.</p>
+                    </div>
+                </div>
+                <div class="content-container">
+                    <div class="content-text-container">
+                        <p>Boxplots are particularly useful for:</p>
+                        <ul>
+                            <li>Identifying the central value (median) of the dataset.</li>
+                            <li>Understanding the spread and skewness of data via quartiles.</li>
+                            <li>Detecting and visualizing outliers clearly.</li>
+                            <li>Comparing distributions across different groups or categories.</li>
+                        </ul>
+
+                        <p><strong>Advantages of Boxplots</strong></p>
+                        <ul>
+                            <li>Provides a concise summary of data distribution.</li>
+                            <li>Effectively highlights asymmetry and skewness in data.</li>
+                            <li>Suitable for large datasets and side-by-side comparison.</li>
+                            <li>Useful for quick visual checks in Exploratory Data Analysis (EDA).</li>
+                        </ul>
+
+                        <p><strong>Interpretation Tips</strong></p>
+                        <ul>
+                            <li>If the median is centered in the box, the distribution is symmetric; otherwise, it's skewed.</li>
+                            <li>Longer whiskers indicate greater spread in that direction.</li>
+                            <li>Outliers may indicate data errors, variability, or interesting phenomena worth investigating.</li>
+                        </ul>
+
+                        <p><strong>Limitations</strong></p>
+                        <ul>
+                            <li>Boxplots do not show the distribution’s modality (e.g., bimodal shape).</li>
+                            <li>They may be less informative for small datasets or those with identical values.</li>
+                        </ul>
+
+                        <p><strong>Use Cases in Data Analysis</strong></p>
+                        <ul>
+                            <li>Comparing test scores across schools or classrooms.</li>
+                            <li>Analyzing income distribution in different regions.</li>
+                            <li>Identifying outlier readings in sensor or experimental data.</li>
+                            <li>Visualizing variable spread across multiple categories in machine learning features.</li>
+                        </ul>
+
+                        <p>In summary, the boxplot illustrates the data distribution across quartiles, highlighting the median, interquartile range, and any outliers. It is a compact, powerful tool for summarizing and comparing distributions in a visual and intuitive way, making it indispensable in the toolkit of every data analyst.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="menu-container">
+                <div class="chat-header">Generate your Boxplot</div>
+                
+                <form id="form-boxplot" enctype="multipart/form-data">
+                    <div class="chat-input-container">
+                        <button type="button" class="boxplot-attach-btn" title="Attach File for Boxplot" onclick="triggerFileUpload('fileInput-boxplot')">
+                            <i class="fas fa-paperclip"></i>
+                        </button>
+                        <textarea id="textarea-boxplot" name="textarea-boxplot" readonly> Attach a file and click Run to show the Boxplot below</textarea>
+                        <button type="submit" class="generate-boxplot-btn" title="Generate Boxplot Data analisys">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+
+                    <div class="upload-area-boxplot" id="drop-area-boxplot" data-input-id="fileInput-boxplot" data-name-id="file-name-boxplot" data-lines-id="file-lines-boxplot" data-columns-id="file-columns-boxplot" data-close-id="file-close-boxplot">
+                        <div class="file-upload-wrapper">
+                            <span id="file-status-boxplot" class="file-status" style="color: green;">
+                                <i class="fas fa-check-circle"></i> File uploaded
+                            </span>
+                            <input type="file" id="fileInput-boxplot" name="fileInput-boxplot" accept=".csv" required>
+                            <span id="file-name-boxplot" class="file-name" style="margin-left: 10px; font-weight: bold;"></span>
+                            <span id="file-lines-boxplot" class="file-lines">Lines: </span>
+                            <span id="file-columns-boxplot" class="file-columns">Columns: </span>
+                            <span id="file-close-boxplot" class="file-close"><strong>x</strong></span>
+                        </div>
+
+                        <div class="csv-header-boxplot">
+                        </div>
+                        <p id="observation-note" class="observation-note">
+                            <strong>Note:</strong> Only the first 50 rows are shown for visualization purposes.
+                        </p>       
+                        
+                        <div id="result-boxplot" class="result-boxplot">
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-correlationmatrix" style="display: none;">
+        <div class="container">
+            <div class="menu-container">   
+                <label for="correlationmatrix" class="title-header">Correlation Matrix</label>
+                <div class="content-container">
+                    <img src="/static/correlationmatrix.svg" width="300" height="300" class="icon" alt="Correlation Matrix Icon">
+                    <div class="content-text-container">
+                        <p>A Correlation Matrix is a fundamental tool in data analysis, providing a clear visual summary of how numerical variables in a dataset relate to one another. It shows the degree to which each pair of variables is linearly correlated, helping analysts uncover patterns and relationships within the data.</p>
+                        <p class="spacer"></p>
+                        <p><strong>Understanding Correlation</strong></p>
+                        <p class="spacer"></p>
+                        <p>Correlation measures the strength and direction of a linear relationship between two numerical variables. Values range from -1 to 1, where:</p>
+                        <ul>
+                            <li><strong>1</strong> indicates a perfect positive linear relationship.</li>
+                            <li><strong>-1</strong> indicates a perfect negative linear relationship.</li>
+                            <li><strong>0</strong> indicates no linear correlation.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="content-container">
+                    <div class="content-text-container">
+                        <p>A Correlation Matrix displays these relationships in a tabular format where each cell represents the correlation coefficient between a pair of variables. It is often color-coded or visualized with a heatmap for better interpretability.</p>
+        
+                        <p>Correlation Matrices are particularly useful for:</p>
+                        <ul>
+                            <li>Identifying highly correlated features that may introduce multicollinearity in predictive models.</li>
+                            <li>Selecting or engineering features for machine learning models.</li>
+                            <li>Detecting spurious or unexpected relationships between variables.</li>
+                            <li>Exploring associations in large datasets during Exploratory Data Analysis (EDA).</li>
+                        </ul>
+
+                        <p>Benefits of Using a Correlation Matrix:</p>
+                        <ul>
+                            <li>Offers a quick overview of all pairwise correlations in a dataset.</li>
+                            <li>Highlights redundant variables that can be dropped or combined.</li>
+                            <li>Helps identify potential candidates for feature selection or dimensionality reduction.</li>
+                            <li>Provides a foundation for deeper statistical or causal analysis.</li>
+                        </ul>
+
+                        <p>Interpretation Tips:</p>
+                        <ul>
+                            <li>Focus on values near ±1 to find strong linear relationships.</li>
+                            <li>Be cautious: correlation does not imply causation.</li>
+                            <li>Outliers and non-linear relationships may distort correlation values.</li>
+                            <li>Use scatter plots alongside the matrix for a more detailed inspection of specific variable pairs.</li>
+                        </ul>
+
+                        <p>In summary, the Correlation Matrix is a powerful diagnostic tool in data analysis. It enables analysts to uncover relationships, streamline feature sets, and make informed decisions about variable interactions. Its clarity and versatility make it a cornerstone of statistical and machine learning workflows.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="menu-container">
+                <div class="chat-header">Generate your Correlation Matrix</div>
+                
+                <form id="form-correlationmatrix" enctype="multipart/form-data">
+                    <div class="chat-input-container">
+                        <button type="button" class="correlationmatrix-attach-btn" title="Attach File for Correlation Matrix" onclick="triggerFileUpload('fileInput-correlationmatrix')">
+                            <i class="fas fa-paperclip"></i>
+                        </button>
+                        <textarea id="textarea-correlationmatrix" name="textarea-correlationmatrix" readonly> Attach a file and click Run to show the Correlation Matrix below</textarea>
+                        <button type="submit" class="generate-correlationmatrix-btn" title="Generate Correlation Matrix Data analisys">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+
+                    <div class="upload-area-correlationmatrix" id="drop-area-correlationmatrix" data-input-id="fileInput-correlationmatrix" data-name-id="file-name-boxplot" data-lines-id="file-lines-boxplot" data-columns-id="file-columns-boxplot" data-close-id="file-close-boxplot">
+                        <div class="file-upload-wrapper">
+                            <span id="file-status-correlationmatrix" class="file-status" style="color: green;">
+                                <i class="fas fa-check-circle"></i> File uploaded
+                            </span>
+                            <input type="file" id="fileInput-correlationmatrix" name="fileInput-correlationmatrix" accept=".csv" required>
+                            <span id="file-name-correlationmatrix" class="file-name" style="margin-left: 10px; font-weight: bold;"></span>
+                            <span id="file-lines-correlationmatrix" class="file-lines">Lines: </span>
+                            <span id="file-columns-correlationmatrix" class="file-columns">Columns: </span>
+                            <span id="file-close-correlationmatrix" class="file-close"><strong>x</strong></span>
+                        </div>
+
+                        <div class="csv-header-correlationmatrix">
+                        </div>
+                        <p id="observation-note" class="observation-note">
+                            <strong>Note:</strong> Only the first 50 rows are shown for visualization purposes.
+                        </p>       
+                        
+                        <div id="result-correlationmatrix" class="result-correlationmatrix">
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-scatterplot" style="display: none;">
+        <div class="container">
+            <div class="menu-container">   
+                <label for="scatterplot" class="title-header">Scatter Plot</label>
+                <div class="content-container">
+                    <img src="/static/scatterplot.svg" width="300" height="300" class="icon" alt="Scatter Plot Icon">
+                    <div class="content-text-container">
+                        <p>A Scatter Plot is a fundamental chart in data analysis used to visualize the bivariate relationship between two numerical variables. By plotting data points on the Cartesian plane, it helps identify patterns, trends, and correlations in the dataset.</p>
+                        <p class="spacer"></p>
+                        <p><strong>Understanding Scatter Plots</strong></p>
+                        <p class="spacer"></p>
+                        <p>Each point in a scatter plot represents an observation in the dataset, positioned according to its values on the X and Y axes. This allows analysts to observe how changes in one variable correspond with changes in another.</p>
+                    </div>
+                </div>
+                <div class="content-container">
+                    <div class="content-text-container">
+                        <p>Scatter Plots are particularly useful for:</p>
+                        <ul>
+                            <li>Identifying linear and non-linear relationships between variables.</li>
+                            <li>Detecting trends, clusters, and outliers in the data.</li>
+                            <li>Assessing correlation strength and direction visually before applying statistical models.</li>
+                            <li>Exploring hypotheses during the Exploratory Data Analysis (EDA) phase.</li>
+                        </ul>
+
+                        <p>Types of Patterns in Scatter Plots:</p>
+                        <ul>
+                            <li><strong>Positive correlation:</strong> As one variable increases, the other also increases.</li>
+                            <li><strong>Negative correlation:</strong> As one variable increases, the other decreases.</li>
+                            <li><strong>No correlation:</strong> The variables show no apparent relationship.</li>
+                            <li><strong>Clusters:</strong> Groupings of points that may suggest categorical separation or latent variables.</li>
+                            <li><strong>Outliers:</strong> Points that deviate significantly from the overall pattern, often warranting further investigation.</li>
+                        </ul>
+
+                        <p>Enhancements and Use Cases:</p>
+                        <ul>
+                            <li>Adding trend lines (e.g., linear regression) to quantify and visualize the direction and strength of relationships.</li>
+                            <li>Color-coding points by category to explore multivariate relationships.</li>
+                            <li>Adjusting point size to reflect a third numerical variable (bubble plots).</li>
+                            <li>Supporting predictive modeling and variable selection by showing dependencies between inputs and targets.</li>
+                        </ul>
+
+                        <p>Interpretation Tips:</p>
+                        <ul>
+                            <li>Look for patterns such as direction, shape, and density of points.</li>
+                            <li>Remember that visual correlation does not always imply causation.</li>
+                            <li>Use with large datasets to gain a broad view of variable interaction, but be cautious of overplotting.</li>
+                            <li>Combine with statistical correlation measures for a complete analysis.</li>
+                        </ul>
+
+                        <p>In summary, the Scatter Plot is an essential visualization for understanding the relationship between two numerical variables. Its simplicity and depth make it a go-to tool for hypothesis generation, pattern detection, and model exploration. By mapping data onto a two-dimensional space, scatter plots provide immediate insight into the nature of interactions within datasets.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="menu-container">
+                <div class="chat-header">Generate your Scatter Plot</div>
+                
+                <form id="form-scatterplot" enctype="multipart/form-data">
+                    <div class="chat-input-container">
+                        <button type="button" class="scatterplot-attach-btn" title="Attach File for Scatter Plot" onclick="triggerFileUpload('fileInput-scatterplot')">
+                            <i class="fas fa-paperclip"></i>
+                        </button>
+                        <textarea id="textarea-scatterplot" name="textarea-scatterplot" readonly> Attach a file and click Run to show the Scatter Plot below</textarea>
+                        <button type="submit" class="generate-scatterplot-btn" title="Generate Scatter plot Data analisys">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+
+                    <div class="upload-area-scatterplot" id="drop-area-scatterplot" data-input-id="fileInput-scatterplot" data-name-id="file-name-scatterplot" data-lines-id="file-lines-scatterplot" data-columns-id="file-columns-scatterplot" data-close-id="file-close-scatterplot">
+                        <div class="file-upload-wrapper">
+                            <span id="file-status-scatterplot" class="file-status" style="color: green;">
+                                <i class="fas fa-check-circle"></i> File uploaded
+                            </span>
+                            <input type="file" id="fileInput-scatterplot" name="fileInput-scatterplot" accept=".csv" required>
+                            <span id="file-name-scatterplot" class="file-name" style="margin-left: 10px; font-weight: bold;"></span>
+                            <span id="file-lines-scatterplot" class="file-lines">Lines: </span>
+                            <span id="file-columns-scatterplot" class="file-columns">Columns: </span>
+                            <span id="file-close-scatterplot" class="file-close"><strong>x</strong></span>
+                        </div>
+
+                        <div class="csv-header-scatterplot">
+                        </div>
+                        <p id="observation-note" class="observation-note">
+                            <strong>Note:</strong> Only the first 50 rows are shown for visualization purposes.
+                        </p>       
+                        
+                        <div id="result-scatterplot" class="result-scatterplot">
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-linechart" style="display: none;">
+        <div class="container">
+            <div class="menu-container">  
+                <label for="linechart" class="title-header">Line Chart</label>
+                <div class="content-container">
+                    <img src="/static/linechart.svg" width="300" height="300" class="icon" alt="Line Chart Icon">
+                    <div class="content-text-container">
+                        <p>A Line Chart is a core visualization in data analysis used to display the progression of a numerical variable over a continuous index — most often time. It connects individual data points with lines, making it especially effective for tracking trends, seasonality, and temporal dynamics in the data.</p>
+                        <p class="spacer"></p>
+                        <p><strong>Understanding Line Charts</strong></p>
+                        <p class="spacer"></p>
+                        <p>Each point on a line chart represents a data value at a given index position. By connecting these points in sequence, the chart reveals how the variable evolves — either gradually or abruptly — helping analysts spot underlying patterns and changes over time.</p>
+                    </div>
+                </div>
+                <div class="content-container">
+                    <div class="content-text-container">
+                        <p>Line Charts are particularly useful for:</p>
+                        <ul>
+                            <li>Visualizing time-series data, such as sales, temperatures, or stock prices.</li>
+                            <li>Detecting trends — upward, downward, or cyclical — in a variable over time.</li>
+                            <li>Uncovering seasonality or periodic fluctuations in data.</li>
+                            <li>Comparing multiple variables over the same index by plotting multiple lines.</li>
+                        </ul>
+
+                        <p>Key Features and Benefits:</p>
+                        <ul>
+                            <li><strong>Trend detection:</strong> Smooth curves or jagged lines show short- and long-term movement.</li>
+                            <li><strong>Anomaly spotting:</strong> Sudden spikes or drops may indicate outliers or events of interest.</li>
+                            <li><strong>Pattern recognition:</strong> Identifying regular intervals or cycles in recurring data.</li>
+                            <li><strong>Forecasting support:</strong> Helps build and validate models that project future behavior.</li>
+                        </ul>
+
+                        <p>Enhancements and Use Cases:</p>
+                        <ul>
+                            <li>Adding shaded areas (area plots) to emphasize magnitude changes.</li>
+                            <li>Overlaying trend lines, moving averages, or confidence intervals for analytical insight.</li>
+                            <li>Highlighting specific events or ranges using annotations.</li>
+                            <li>Using interactivity in dashboards to zoom, filter, or compare date ranges.</li>
+                        </ul>
+
+                        <p>Interpretation Tips:</p>
+                        <ul>
+                            <li>Ensure consistent time intervals to avoid misleading impressions of change rate.</li>
+                            <li>Label axes and lines clearly to enhance interpretability, especially with multiple series.</li>
+                            <li>Consider log scaling for exponential growth patterns.</li>
+                            <li>Beware of missing data, which can distort visual continuity.</li>
+                        </ul>
+
+                        <p>In summary, the Line Chart is one of the most effective tools in time-based data analysis. It provides a clear visual narrative of how values shift over an index, allowing analysts to uncover trends, cycles, and turning points. Ideal for temporal analysis, forecasting, and monitoring, the line chart turns raw sequences into actionable visual stories.</p>
+                    </div>
+                </div>
+            </div> 
+            
+            <div class="menu-container">
+                <div class="chat-header">Generate your Line Chart</div>
+                
+                <form id="form-linechart" enctype="multipart/form-data">
+                    <div class="chat-input-container">
+                        <button type="button" class="linechart-attach-btn" title="Attach File for Line Chart" onclick="triggerFileUpload('fileInput-linechart')">
+                            <i class="fas fa-paperclip"></i>
+                        </button>
+                        <textarea id="textarea-linechart" name="textarea-linechart" readonly> Attach a file and click Run to show the Line Chart below</textarea>
+                        <button type="submit" class="generate-linechart-btn" title="Generate Line Chart Data analisys">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+
+                    <div class="upload-area-linechart" id="drop-area-linechart" data-input-id="fileInput-linechart" data-name-id="file-name-linechart" data-lines-id="file-lines-linechart" data-columns-id="file-columns-linechart" data-close-id="file-close-linechart">
+                        <div class="file-upload-wrapper">
+                            <span id="file-status-linechart" class="file-status" style="color: green;">
+                                <i class="fas fa-check-circle"></i> File uploaded
+                            </span>
+                            <input type="file" id="fileInput-linechart" name="fileInput-linechart" accept=".csv" required>
+                            <span id="file-name-linechart" class="file-name" style="margin-left: 10px; font-weight: bold;"></span>
+                            <span id="file-lines-linechart" class="file-lines">Lines: </span>
+                            <span id="file-columns-linechart" class="file-columns">Columns: </span>
+                            <span id="file-close-linechart" class="file-close"><strong>x</strong></span>
+                        </div>
+
+                        <div class="csv-header-linechart">
+                        </div>
+                        <p id="observation-note" class="observation-note">
+                            <strong>Note:</strong> Only the first 50 rows are shown for visualization purposes.
+                        </p>       
+                        
+                        <div id="result-linechart" class="result-linechart">
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-piechart" style="display: none;">
+        <div class="container">
+            <div class="menu-container">   
+                <label for="piechart" class="title-header">Pie Chart</label>
+                <div class="content-container">
+                    <img src="/static/piechart.svg" width="300" height="300" class="icon" alt="Pie Chart Icon">
+                    <div class="content-text-container">
+                        <p>A Pie Chart is a circular statistical graphic divided into slices to illustrate the proportional distribution of categories within a specified column variable. Each slice represents a category’s contribution to the total, with the angle and arc length corresponding to its relative frequency or value.</p>
+                        <p class="spacer"></p>
+                        <p><strong>Understanding Pie Charts</strong></p>
+                        <p class="spacer"></p>
+                        <p>Pie charts transform categorical data into a visual form that highlights part-to-whole relationships. They are particularly effective when the number of categories is small and differences in proportions are visually significant.</p>
+                    </div>
+                </div>
+                <div class="content-container">
+                    <div class="content-text-container">
+                        <p>Pie Charts are particularly useful for:</p>
+                        <ul>
+                            <li>Displaying the proportion of each category in a dataset.</li>
+                            <li>Communicating the dominance or minority of a category.</li>
+                            <li>Comparing relative sizes of parts within a whole.</li>
+                            <li>Providing an intuitive overview for non-technical audiences.</li>
+                        </ul>
+
+                        <p>Key Features and Considerations:</p>
+                        <ul>
+                            <li><strong>Slice size:</strong> Each slice visually encodes a percentage of the total.</li>
+                            <li><strong>Color-coding:</strong> Distinct colors or patterns enhance differentiation between categories.</li>
+                            <li><strong>Labeling:</strong> Displaying percentage values or category names improves clarity.</li>
+                            <li><strong>Donut variant:</strong> A variation with a hollow center for added readability and stylistic presentation.</li>
+                        </ul>
+
+                        <p>Best Practices:</p>
+                        <ul>
+                            <li>Limit the number of slices to 5–7 to maintain visual clarity.</li>
+                            <li>Use sorting (e.g., from largest to smallest) to guide interpretation.</li>
+                            <li>Combine small categories into an “Other” group to avoid clutter.</li>
+                            <li>Avoid using pie charts when values are very similar in size — bar charts may be more effective in such cases.</li>
+                        </ul>
+
+                        <p>Common Use Cases:</p>
+                        <ul>
+                            <li>Market share by company or product.</li>
+                            <li>Distribution of responses in survey data.</li>
+                            <li>Composition of budget or spending categories.</li>
+                            <li>Demographic segmentation in population studies.</li>
+                        </ul>
+
+                        <p>Interpretation Tips:</p>
+                        <ul>
+                            <li>Ensure the sum of all categories equals 100% or clearly indicate if it doesn’t (e.g., due to filtering).</li>
+                            <li>Use interactive or exploded views to highlight specific slices in dashboards.</li>
+                            <li>Be cautious of 3D effects, which can distort perception of slice sizes.</li>
+                            <li>Consider alternatives (e.g., bar or stacked bar charts) for complex comparisons.</li>
+                        </ul>
+
+                        <p>In summary, the Pie Chart is a classic visualization tool for summarizing categorical proportions. While visually appealing and easy to interpret for small datasets, it requires careful design to avoid misinterpretation. When used appropriately, it provides a quick snapshot of how different categories contribute to a whole, making it valuable in presentations, dashboards, and exploratory data analysis.</p>
+                    </div>
+                </div>
+            </div> 
+            
+            <div class="menu-container">
+                <div class="chat-header">Generate your Pie Chart</div>
+                
+                <form id="form-piechart" enctype="multipart/form-data">
+                    <div class="chat-input-container">
+                        <button type="button" class="piechart-attach-btn" title="Attach File for Pie Chart" onclick="triggerFileUpload('fileInput-piechart')">
+                            <i class="fas fa-paperclip"></i>
+                        </button>
+                        <textarea id="textarea-piechart" name="textarea-piechart" readonly> Attach a file and click Run to show the Pie Chart below</textarea>
+                        <button type="submit" class="generate-piechart-btn" title="Generate Pie Chart Data analisys">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+
+                    <div class="upload-area-piechart" id="drop-area-piechart" data-input-id="fileInput-piechart" data-name-id="file-name-piechart" data-lines-id="file-lines-piechart" data-columns-id="file-columns-piechart" data-close-id="file-close-piechart">
+                        <div class="file-upload-wrapper">
+                            <span id="file-status-piechart" class="file-status" style="color: green;">
+                                <i class="fas fa-check-circle"></i> File uploaded
+                            </span>
+                            <input type="file" id="fileInput-piechart" name="fileInput-piechart" accept=".csv" required>
+                            <span id="file-name-piechart" class="file-name" style="margin-left: 10px; font-weight: bold;"></span>
+                            <span id="file-lines-piechart" class="file-lines">Lines: </span>
+                            <span id="file-columns-piechart" class="file-columns">Columns: </span>
+                            <span id="file-close-piechart" class="file-close"><strong>x</strong></span>
+                        </div>
+
+                        <div class="csv-header-piechart">
+                        </div>
+                        <p id="observation-note" class="observation-note">
+                            <strong>Note:</strong> Only the first 50 rows are shown for visualization purposes.
+                        </p>       
+                        
+                        <div id="result-piechart" class="result-piechart">
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-olap-slice-dice" style="display: none;">
+        <div class="container">
+            <div class="menu-container">
+                <label for="olap-slice-dice" class="title-header">OLAP Slice & Dice</label>
+                <div class="content-container">
+                    <img src="/static/olap_slice_dice.svg" width="300" height="300" class="icon" alt="OLAP Slice and Dice Icon">
+                    <div class="content-text-container">
+                    <p>OLAP (Online Analytical Processing) "Slice and Dice" is a fundamental data analysis operation used to explore and visualize multidimensional data from different angles.</p>
+                    <p class="spacer"></p>
+                    <p><strong>Slice</strong></p>
+                    <p>The “slice” operation involves selecting a single layer (or “slice”) of data from a cube by fixing a single dimension’s value. This reduces the cube’s dimensionality and focuses analysis on a specific subset.</p>
+                    <ul>
+                        <li>Example: Focusing only on Q1 sales data in a year.</li>
+                        <li>Effect: Reduces a 3D cube to a 2D matrix.</li>
+                    </ul>
+                    <p class="spacer"></p>
+                    <p><strong>Dice</strong></p>
+                    <p>“Dicing” selects multiple dimensions and restricts their values to form a sub-cube. It offers a more flexible view by analyzing a smaller cube from the original dataset.</p>
+                    <ul>
+                        <li>Example: Analyzing sales in Q1 and Q2 for products A and B in region X.</li>
+                        <li>Effect: Extracts a smaller cube (or sub-matrix) from the larger cube.</li>
+                    </ul>
+                    <p>Use Cases:</p>
+                    <ul>
+                        <li>Focused marketing analysis for a particular region or product line.</li>
+                        <li>Isolating trends over a certain time frame.</li>
+                        <li>Targeted reporting for performance evaluation.</li>
+                    </ul>
+                    <p>Benefits:</p>
+                    <ul>
+                        <li>Enables faster insights through dimensional filtering.</li>
+                        <li>Supports scenario analysis by isolating relevant data subsets.</li>
+                        <li>Improves decision-making by narrowing data views.</li>
+                    </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-container">
+                <div class="chat-header">Generate your OLAP Slice Dice</div>
+                
+                <form id="form-olap-slice-dice" enctype="multipart/form-data">
+                    <div class="chat-input-container">
+                        <button type="button" class="olap-slice-dice-attach-btn" title="Attach File for OLAP Slice Dice" onclick="triggerFileUpload('fileInput-olap-slice-dice')">
+                            <i class="fas fa-paperclip"></i>
+                        </button>
+                        <textarea id="textarea-olap-slice-dice" name="textarea-olap-slice-dice" readonly>Attach a file and click Run to show the Olap Slice Dice below</textarea>
+                        <button type="submit" class="generate-olap-slice-dice-btn" title="Generate OLAP Slice Dice Data analisys">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+
+                    <div class="upload-area-olap-slice-dice" id="drop-area-olap-slice-dice" data-input-id="fileInput-olap-slice-dice" data-name-id="file-name-olap-slice-dice" data-lines-id="file-lines-olap-slice-dice" data-columns-id="file-columns-olap-slice-dice" data-close-id="file-close-olap-slice-dice">
+                        <div class="file-upload-wrapper">
+                            <span id="file-status-olap-slice-dice" class="file-status" style="color: green;">
+                                <i class="fas fa-check-circle"></i> File uploaded
+                            </span>
+                            <input type="file" id="fileInput-olap-slice-dice" name="fileInput-olap-slice-dice" accept=".csv" required>
+                            <span id="file-name-olap-slice-dice" class="file-name" style="margin-left: 10px; font-weight: bold;"></span>
+                            <span id="file-lines-olap-slice-dice" class="file-lines">Lines: </span>
+                            <span id="file-columns-olap-slice-dice" class="file-columns">Columns: </span>
+                            <span id="file-close-olap-slice-dice" class="file-close"><strong>x</strong></span>
+                        </div>
+
+                        <div class="csv-header-olap-slice-dice">
+                        </div>
+                        <p id="observation-note" class="observation-note">
+                            <strong>Note:</strong> Only the first 50 rows are shown for visualization purposes.
+                        </p>       
+                        
+                        <div id="result-olap-slice-dice" class="result-olap-slice-dice">
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-olap-drilldown" style="display: none;">
+        <div class="container">
+            <div class="menu-container">
+                <label for="olap-drilldown" class="title-header">OLAP Drilldown</label>
+                <div class="content-container">
+                    <img src="/static/olap_drilldown.svg" width="300" height="300" class="icon" alt="OLAP Drilldown Icon">
+                    <div class="content-text-container">
+                    <p>OLAP "Drilldown" is a hierarchical navigation technique in multidimensional analysis that enables users to view data at increasing levels of detail.</p>
+                    <p class="spacer"></p>
+                    <p><strong>How it Works:</strong></p>
+                    <ul>
+                        <li>Starts with a high-level summary (e.g., yearly totals).</li>
+                        <li>Allows users to drill into lower levels (e.g., quarters → months → weeks).</li>
+                        <li>Maintains dimensional context while revealing more granular data.</li>
+                    </ul>
+                    <p class="spacer"></p>
+                    <p><strong>Example:</strong></p>
+                    <ul>
+                        <li>Begin with total sales for 2024.</li>
+                        <li>Drill into Q1, then into January, then into product category or customer segment.</li>
+                    </ul>
+                    <p class="spacer"></p>
+                    <p>Benefits of Drilldown:</p>
+                    <ul>
+                        <li>Improves data comprehension by exposing detail on demand.</li>
+                        <li>Helps uncover root causes of anomalies or trends.</li>
+                        <li>Supports multi-level decision-making across strategic and operational layers.</li>
+                    </ul>
+                    <p class="spacer"></p>
+                    <p>Common Applications:</p>
+                    <ul>
+                        <li>Executive dashboards with drill-through functionality.</li>
+                        <li>Sales reporting by region, product, and time.</li>
+                        <li>Customer segmentation and performance tracking.</li>
+                    </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-container">
+                <div class="chat-header">Generate your OLAP Drilldown</div>
+                
+                <form id="form-olap-drilldown" enctype="multipart/form-data">
+                    <div class="chat-input-container">
+                        <button type="button" class="olap-drilldown-attach-btn" title="Attach File for OLAP Drilldown" onclick="triggerFileUpload('fileInput-olap-drilldown')">
+                            <i class="fas fa-paperclip"></i>
+                        </button>
+                        <textarea id="textarea-olap-drilldown" name="textarea-olap-drilldown" readonly> Attach a file and click Run to show the Olap Slice Dice below</textarea>
+                        <button type="submit" class="generate-olap-drilldown-btn" title="Generate OLAP Drilldown Data analisys">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+
+                    <div class="upload-area-olap-drilldown" id="drop-area-olap-drilldown" data-input-id="fileInput-olap-drilldown" data-name-id="file-name-olap-drilldown" data-lines-id="file-lines-olap-drilldown" data-columns-id="file-columns-olap-drilldown" data-close-id="file-close-olap-drilldown">
+                        <div class="file-upload-wrapper">
+                            <span id="file-status-olap-drilldown" class="file-status" style="color: green;">
+                                <i class="fas fa-check-circle"></i> File uploaded
+                            </span>
+                            <input type="file" id="fileInput-olap-drilldown" name="fileInput-olap-drilldown" accept=".csv" required>
+                            <span id="file-name-olap-drilldown" class="file-name" style="margin-left: 10px; font-weight: bold;"></span>
+                            <span id="file-lines-olap-drilldown" class="file-lines">Lines: </span>
+                            <span id="file-columns-olap-drilldown" class="file-columns">Columns: </span>
+                            <span id="file-close-olap-drilldown" class="file-close"><strong>x</strong></span>
+                        </div>
+
+                        <div class="csv-header-olap-drilldown">
+                        </div>
+                        <p id="observation-note" class="observation-note">
+                            <strong>Note:</strong> Only the first 50 rows are shown for visualization purposes.
+                        </p>       
+                        
+                        <div id="result-olap-drilldown" class="result-olap-drilldown">
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-olap-pivot" style="display: none;">
+        <div class="container">
+            <div class="menu-container">
+                <label for="olap-pivot" class="title-header">OLAP Pivot</label>
+                <div class="content-container">
+                    <img src="/static/olap_pivot.svg" width="300" height="300" class="icon" alt="OLAP Pivot Icon">
+                    <div class="content-text-container">
+                    <p>The OLAP "Pivot" operation allows users to dynamically rotate data axes in multidimensional tables (data cubes), reorienting dimensions to analyze relationships from new perspectives.</p>
+                    <p class="spacer"></p>
+                    <p><strong>What It Does:</strong></p>
+                    <ul>
+                        <li>Switches the rows and columns of a multidimensional matrix.</li>
+                        <li>Changes the data layout without altering the actual data.</li>
+                        <li>Enables analysts to ask different questions of the same dataset.</li>
+                    </ul>
+                    <p class="spacer"></p>
+                    <p><strong>Example:</strong></p>
+                    <ul>
+                        <li>Original view: Region as rows, Year as columns.</li>
+                        <li>Pivoted view: Year as rows, Region as columns.</li>
+                    </ul>
+                    <p class="spacer"></p>
+                    <p>Advantages of Pivoting:</p>
+                    <ul>
+                        <li>Promotes exploratory analysis by uncovering hidden patterns.</li>
+                        <li>Simplifies cross-tab comparisons.</li>
+                        <li>Supports flexible, self-service analytics for business users.</li>
+                    </ul>
+                    <p>Common Use Cases:</p>
+                    <ul>
+                        <li>Interactive dashboards with drill-and-pivot capability.</li>
+                        <li>Ad-hoc reporting in business intelligence tools.</li>
+                        <li>Trend analysis across changing metrics.</li>
+                    </ul>
+                    <p>In Summary:</p>
+                    <ul>
+                        <li>Pivoting is about perspective — reshaping how data is visualized.</li>
+                        <li>It complements slicing, dicing, and drilling in multidimensional analysis.</li>
+                        <li>It boosts the flexibility and power of OLAP-based decision systems.</li>
+                    </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-container">
+                <div class="chat-header">Generate your OLAP Pivot</div>
+                
+                <form id="form-olap-pivot" enctype="multipart/form-data">
+                    <div class="chat-input-container">
+                        <button type="button" class="olap-pivot-attach-btn" title="Attach File for OLAP Pivot" onclick="triggerFileUpload('fileInput-olap-pivot')">
+                            <i class="fas fa-paperclip"></i>
+                        </button>
+                        <textarea id="textarea-olap-pivot" name="textarea-olap-pivot" readonly> Attach a file and click Run to show the Olap Pivot below</textarea>
+                        <button type="submit" class="generate-olap-pivot-btn" title="Generate OLAP Pivot Data analisys">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+
+                    <div class="upload-area-olap-pivot" id="drop-area-olap-pivot" data-input-id="fileInput-olap-pivot" data-name-id="file-name-olap-pivot" data-lines-id="file-lines-olap-pivot" data-columns-id="file-columns-olap-pivot" data-close-id="file-close-olap-pivot">
+                        <div class="file-upload-wrapper">
+                            <span id="file-status-olap-pivot" class="file-status" style="color: green;">
+                                <i class="fas fa-check-circle"></i> File uploaded
+                            </span>
+                            <input type="file" id="fileInput-olap-pivot" name="fileInput-olap-pivot" accept=".csv" required>
+                            <span id="file-name-olap-pivot" class="file-name" style="margin-left: 10px; font-weight: bold;"></span>
+                            <span id="file-lines-olap-pivot" class="file-lines">Lines: </span>
+                            <span id="file-columns-olap-pivot" class="file-columns">Columns: </span>
+                            <span id="file-close-olap-pivot" class="file-close"><strong>x</strong></span>
+                        </div>
+
+                        <div class="csv-header-olap-pivot">
+                        </div>
+                        <p id="observation-note" class="observation-note">
+                            <strong>Note:</strong> Only the first 50 rows are shown for visualization purposes.
+                        </p>       
+                        
+                        <div id="result-olap-pivot" class="result-olap-pivot">
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Elemento para mostrar a mensagem de carregamento -->
+    <div id="loadingMessage" class="loading-overlay" style="display: none;">
+        <div class="loading-box">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Analyzing the data... Please wait.</p>
+        </div>
+    </div>
+
+    <script>
+        // Function to toggle the side menu visibility
+        function toggleMenu() {
+            var menu = document.getElementById('sideMenu');
+            if (menu.style.display === 'block') {
+                menu.style.display = 'none'; // Hide the menu if it's currently visible
+                menu.style.width = '0'; // Set width to 0 when hidden
+            } else {
+                menu.style.display = 'block'; // Show the menu
+                menu.style.width = '250px'; // Set the width of the menu
+            }
+        }
+
+        // Function to close the side menu
+        function closeMenu() {
+            var menu = document.getElementById('sideMenu');
+            menu.style.width = '0'; // Set width to 0 when closing
+            menu.style.display = 'none'; // Hide the menu
+        }
+
+        // Function to toggle dropdown content visibility
+        function toggleDropdown(element) {
+            // Get the section to show/hide
+            const section = document.querySelector(`.container-${element.dataset.section}`);
+            
+            // Toggle visibility of the corresponding section
+            if (section.style.display === "none" || section.style.display === "") {
+                section.style.display = "block";
+            } else {
+                section.style.display = "none";
+            }
+        }
+
+        // Function to navigate to a specific URL
+        function navigateTo(url) {
+            window.location.href = url; // Change the current page to the provided URL
+        }
+
+        document.getElementById("csvForm").addEventListener("submit", function(event) {
+            // Exibe a tela de carregamento
+            document.getElementById("loadingMessage").style.display = "flex";
+        });
+
+        document.querySelectorAll('.dropdown-toggle').forEach(button => {
+            button.addEventListener('click', () => {
+                const dropdownMenu = button.nextElementSibling;
+                const isOpen = dropdownMenu.style.display === 'flex';
+
+                // Fecha todos os outros dropdowns
+                document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                    menu.style.display = 'none';
+                });
+
+                // Abre o menu clicado
+                dropdownMenu.style.display = isOpen ? 'none' : 'flex';
+            });
+        });
+
+        function updateCharCount() {
+            const textarea = document.getElementById('user_input');
+            const charCount = document.getElementById('char_count');
+            charCount.textContent = textarea.value.length;
+        }
+
+        function triggerFileUpload(inputId) {
+            document.getElementById(inputId).click();
+        }
+
+        function addFileInputHandlers(prefix) {
+            const input = document.getElementById(`fileInput${prefix ? prefix.charAt(0).toUpperCase() + prefix.slice(1) : ''}`);
+            const dropArea = document.getElementById(`drop-area${prefix}`) || document.getElementById('drop-area');
+            const fileName = document.getElementById(`file-name${prefix}`) || document.getElementById('file-name');
+            const fileLines = document.getElementById(`file-lines${prefix}`) || document.getElementById('file-lines');
+            const fileColumns = document.getElementById(`file-columns${prefix}`) || document.getElementById('file-columns');
+            const fileStatus = document.getElementById(`file-status${prefix}`) || document.getElementById('file-status');
+            const fileClose = document.getElementById(`file-close${prefix}`) || document.getElementById('file-close');
+            const tableContainer = document.querySelector(`.csv-header${prefix}`) || document.querySelector('.csv-header');
+            const dataanalysisRresult = document.getElementById(`result${prefix}`) || document.querySelector('result');
+
+            if (!input) return;
+
+            input.addEventListener('change', function () {
+                const file = this.files[0];
+
+                if (file) {
+                    dropArea.style.display = 'block';
+                    fileName.textContent = file.name;
+
+                    if (file.type === 'text/csv') {
+                        const reader = new FileReader();
+
+                        reader.onload = function (e) {
+                            const text = e.target.result;
+                            const lines = text.trim().split(/\r?\n/).filter(line => line.trim() !== '');
+                            const numLines = lines.length;
+                            const numColumns = lines[0]?.split(',').length || 0;
+
+                            fileLines.textContent = `Lines: ${numLines}`;
+                            fileColumns.textContent = `Columns: ${numColumns}`;
+                            fileStatus.innerHTML = `<i class="fas fa-check-circle"></i> File uploaded`;
+
+                            displayCSVData(text, tableContainer);
+                        };
+                        reader.readAsText(file);
+                    } else {
+                        alert('Please upload a valid CSV file.');
+                    }
+                } else {
+                    dropArea.style.display = 'none';
+                    fileName.textContent = "No file selected.";
+                }
+            });
+
+            fileClose?.addEventListener('click', function () {
+                input.value = '';
+                fileName.textContent = '';
+                fileLines.textContent = 'Lines: ';
+                fileColumns.textContent = 'Columns: ';
+                fileStatus.innerHTML = '';
+                tableContainer.innerHTML = '';
+                dropArea.style.display = 'none';
+                if (dataanalysisRresult) {
+                    dataanalysisRresult.innerHTML = '';
+                }
+            });
+        }
+
+        addFileInputHandlers(''); 
+        addFileInputHandlers('-histogramwithkde'); 
+        addFileInputHandlers('-boxplot'); 
+        addFileInputHandlers('-correlationmatrix');
+        addFileInputHandlers('-scatterplot'); 
+        addFileInputHandlers('-linechart'); 
+        addFileInputHandlers('-piechart');
+        addFileInputHandlers('-olap-slice-dice');
+        addFileInputHandlers('-olap-drilldown');
+        addFileInputHandlers('-olap-pivot');
+
+        function displayCSVData(contents, container) {
+            const rows = contents.split('\n');
+            container.innerHTML = '';
+
+            const table = document.createElement('table');
+            const tableHeader = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+
+            const headers = rows[0].split(',');
+
+            headers.forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                headerRow.appendChild(th);
+            });
+
+            tableHeader.appendChild(headerRow);
+            table.appendChild(tableHeader);
+
+            const tableBody = document.createElement('tbody');
+
+            for (let i = 1; i <= Math.min(50, rows.length - 1); i++) {
+                const row = rows[i].split(',');
+                const tr = document.createElement('tr');
+
+                row.forEach(cell => {
+                    const td = document.createElement('td');
+                    td.textContent = cell;
+                    tr.appendChild(td);
+                });
+
+                tableBody.appendChild(tr);
+            }
+
+            table.appendChild(tableBody);
+            container.appendChild(table);
+        }
+
+        function setupFormSubmission({ formId, inputId, resultId, endpoint, altText }) {
+            document.getElementById(formId).addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                const inputFile = document.getElementById(inputId);
+                if (inputFile.files.length === 0) {
+                    alert("Please select a CSV file.");
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('file', inputFile.files[0]);
+
+                try {
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        alert("Error: " + (errorData.error || 'Unknown error'));
+                        return;
+                    }
+
+                    const data = await response.json();
+                    const resultDiv = document.getElementById(resultId);
+                    resultDiv.innerHTML = `<img src="data:image/png;base64,${data.image}" alt="${altText}">`;
+
+                } catch (error) {
+                    alert("Request failed: " + error.message);
+                }
+            });
+
+            // Zoom logic
+            document.addEventListener('click', function (event) {
+                const img = event.target;
+                if (img.closest(`#${resultId}`) && img.tagName === 'IMG') {
+                    if (!img.classList.contains('zoomed')) {
+                        img.style.transform = 'scale(2)';
+                        img.classList.add('zoomed');
+                        img.style.cursor = 'zoom-out';
+                    } else {
+                        img.style.transform = 'scale(1)';
+                        img.classList.remove('zoomed');
+                        img.style.cursor = 'zoom-in';
+                    }
+                }
+            });
+        }
+
+        setupFormSubmission({
+            formId: 'form-histogramwithkde',
+            inputId: 'fileInput-histogramwithkde',
+            resultId: 'result-histogramwithkde',
+            endpoint: '/histogramwithkde',
+            altText: 'Histogram with KDE'
+        });
+
+        setupFormSubmission({
+            formId: 'form-boxplot',
+            inputId: 'fileInput-boxplot',
+            resultId: 'result-boxplot',
+            endpoint: '/boxplot',
+            altText: 'Boxplot'
+        });
+
+        setupFormSubmission({
+            formId: 'form-correlationmatrix',
+            inputId: 'fileInput-correlationmatrix',
+            resultId: 'result-correlationmatrix',
+            endpoint: '/correlationmatrix',
+            altText: 'Correlation Matrix'
+        });
+
+        setupFormSubmission({
+            formId: 'form-scatterplot',
+            inputId: 'fileInput-scatterplot',
+            resultId: 'result-scatterplot',
+            endpoint: '/scatterplot',
+            altText: 'Scatter Plot'
+        });
+
+        setupFormSubmission({
+            formId: 'form-linechart',
+            inputId: 'fileInput-linechart',
+            resultId: 'result-linechart',
+            endpoint: '/linechart',
+            altText: 'Line Chart'
+        });
+
+        setupFormSubmission({
+            formId: 'form-piechart',
+            inputId: 'fileInput-piechart',
+            resultId: 'result-piechart',
+            endpoint: '/piechart',
+            altText: 'Pie Chart'
+        });
+
+        setupFormSubmission({
+            formId: 'form-olap-slice-dice',
+            inputId: 'fileInput-olap-slice-dice',
+            resultId: 'result-olap-slice-dice',
+            endpoint: '/olap_slice_dice',
+            altText: 'OLAP Slice Dice'
+        });
+
+        setupFormSubmission({
+            formId: 'form-olap-drilldown',
+            inputId: 'fileInput-olap-drilldown',
+            resultId: 'result-olap-drilldown',
+            endpoint: '/olap_drilldown',
+            altText: 'OLAP Drilldown'
+        });
+
+        setupFormSubmission({
+            formId: 'form-olap-pivot',
+            inputId: 'fileInput-olap-pivot',
+            resultId: 'result-olap-pivot',
+            endpoint: '/olap_pivot',
+            altText: 'OLAP Pivot'
+        });
+
+        const userInput = document.getElementById("user_input");
+
+        userInput.addEventListener("keydown", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                document.querySelector(".send-btn").click();
+            }
+        });
+
+
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Data Analytics - Help Center</title>
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/src/styles.css">
+    <style>
+        /* Base styles from home page */
+        :root {
+            --color-bg: #f4f4f9;
+            --color-text: #1a1a2e;
+            --color-primary: #1465bb;
+            --color-accent: #00a8ff;
+            --color-white: #ffffff;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        /* Help Center specific styles */
+        .help-hero {
+            background-color: var(--color-primary);
+            color: var(--color-white);
+            padding: 4rem 0;
+            text-align: center;
+        }
+
+        .search-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1rem 3rem 1rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1.1rem;
+            box-shadow: var(--shadow);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--color-primary);
+        }
+
+        /* Tutorial Section */
+        .tutorials {
+            padding: 5rem 0;
+            background-color: var(--color-white);
+        }
+
+        .tutorial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .tutorial-card {
+            background-color: var(--color-bg);
+            border-radius: 1rem;
+            overflow: hidden;
+            transition: transform 0.3s;
+            box-shadow: var(--shadow);
+        }
+
+        .tutorial-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .tutorial-image {
+            position: relative;
+            aspect-ratio: 16/9;
+            overflow: hidden;
+        }
+
+        .tutorial-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 1rem;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .tutorial-content {
+            padding: 1.5rem;
+        }
+
+        /* FAQ Section */
+        .faq {
+            padding: 5rem 0;
+            background-color: var(--color-bg);
+        }
+
+        .faq-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .faq-category {
+            background-color: var(--color-white);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: var(--shadow);
+        }
+
+        .faq-item {
+            margin-top: 1.5rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 1rem;
+        }
+
+        .faq-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            padding: 1rem 0;
+        }
+
+        .faq-answer {
+            display: none;
+            padding: 1rem 0;
+            color: #666;
+        }
+
+        .faq-item.active .faq-answer {
+            display: block;
+        }
+
+        .faq-item.active .chevron-down {
+            transform: rotate(180deg);
+        }
+
+        /* Buttons and common elements from home page */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background-color: var(--color-accent);
+            color: var(--color-white);
+        }
+
+        .btn-primary:hover {
+            background-color: #0090dd;
+        }
+
+        .btn-fixed {
+          width: 160px;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--color-text);
+            color: var(--color-white);
+            padding: 2rem 0;
+            text-align: center;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .tutorial-grid,
+            .faq-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .help-hero h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen">
+        <!-- Hero Section -->
+        <header class="help-hero">
+            <div class="container">
+                <h1>How can we help you?</h1>
+                <div class="search-container">
+                    <input type="text" class="search-input" placeholder="Search for help articles, tutorials, or FAQs..." id="searchInput">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                </div>
+                <button class="btn btn-primary btn-fixed" onclick="window.location.href='/login'">
+                    Get Started
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="chevron-right" onclick="window.location.href='/login'"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                  <button class="btn btn-primary btn-fixed" onclick="window.location.href='/'">
+                    Home
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="chevron-right" onclick="window.location.href='/'"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+            </div>
+        </header>
+
+        <!-- Tutorial Section -->
+        <section class="tutorials">
+            <div class="container">
+                <h2>Video Tutorials</h2>
+                <div class="tutorial-grid">
+                    <div class="tutorial-card">
+                        <div class="tutorial-image">
+                            {% if video_tutorial1 %}
+                            <video width="100%" height="auto" controls>
+                                <source src="{{ url_for('stream_video', source='help', filename=video_tutorial1) }}" type="video/mp4">
+                                Seu navegador não suporta vídeos.
+                            </video>
+                            {% endif %}
+                        </div>
+                        <div class="tutorial-content">
+                            <h3>{{ video1.title }}</h3>
+                            <p>{{ video1.text }}</p>
+                        </div>
+                    </div>
+                    <div class="tutorial-card">
+                        <div class="tutorial-image">
+                            {% if video_tutorial2 %}
+                            <video width="100%" height="auto" controls>
+                                <source src="{{ url_for('stream_video', source='help', filename=video_tutorial2) }}" type="video/mp4">
+                                Seu navegador não suporta vídeos.
+                            </video>
+                            {% endif %}
+                        </div>
+                        <div class="tutorial-content">
+                            <h3>{{ video2.title }}</h3>
+                            <p>{{ video2.text }}</p>
+                        </div>
+                    </div>
+                    <div class="tutorial-card">
+                        <div class="tutorial-image">
+                            {% if video_tutorial3 %}
+                            <video width="100%" height="auto" controls>
+                                <source src="{{ url_for('stream_video', source='help', filename=video_tutorial3) }}" type="video/mp4">
+                                Seu navegador não suporta vídeos.
+                            </video>
+                            {% endif %}
+                        </div>
+                        <div class="tutorial-content">
+                            <h3>{{ video3.title }}</h3>
+                            <p>{{ video3.text }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section class="faq">
+            <div class="container">
+                <h2>Frequently Asked Questions</h2>
+                <div class="faq-grid">
+                    <div class="faq-category">
+                        <h3>Getting Started</h3>
+                        <div class="faq-item">
+                            <div class="faq-question">
+                                <span>How do I upload my spreadsheet with data?</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="chevron-down"><path d="m6 9 6 6 6-6"/></svg>
+                            </div>
+                            <div class="faq-answer">
+                                Simply click the upload button on your data analysis dashboard and select your CSV file. Click on the button Start and our application will automatically process and analyze your data.
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-question">
+                                <span>What file formats are supported?</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="chevron-down"><path d="m6 9 6 6 6-6"/></svg>
+                            </div>
+                            <div class="faq-answer">
+                                We support CSV, Excel (xlsx, xls) file formats. All files must be under 20MB in size.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="faq-category">
+                        <h3>Features & Analysis</h3>
+                        <div class="faq-item">
+                            <div class="faq-question">
+                                <span>How does the AI analysis work?</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="chevron-down"><path d="m6 9 6 6 6-6"/></svg>
+                            </div>
+                            <div class="faq-answer">
+                                Our AI system analyzes patterns in your data, generates insights, and provides recommendations based on industry best practices and historical trends.
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-question">
+                                <span>Can I export the analysis results?</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="chevron-down"><path d="m6 9 6 6 6-6"/></svg>
+                            </div>
+                            <div class="faq-answer">
+                                Yes, you can export results in PDF clicking in download button.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <div class="container">
+                <p>&copy; 2024 AIIQData. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // FAQ Toggle functionality
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', () => {
+                const item = question.parentElement;
+                item.classList.toggle('active');
+            });
+        });
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            document.querySelectorAll('.faq-item').forEach(item => {
+                const question = item.querySelector('.faq-question span').textContent.toLowerCase();
+                const answer = item.querySelector('.faq-answer').textContent.toLowerCase();
+                
+                if (question.includes(searchTerm) || answer.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

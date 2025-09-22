@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Meta tags for character set and responsive design -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Title of the page displayed in the browser tab -->
+    <title>Edit Documents - AIIQ</title>
+
+    <!-- Including FontAwesome for icons -->
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        /* Styles for the body of the page */
+        body {
+            font-family: Arial, sans-serif; /* Sets font family */
+            background-color: #f4f4f9; /* Light gray background */
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Styles for the side menu */
+        .side-menu {
+            height: 100%; /* Full height */
+            width: 0; /* Initially, the menu is hidden */
+            position: fixed; /* Fixed position to stay on screen when scrolling */
+            z-index: 1; /* Ensure menu stays above other content */
+            top: 0;
+            left: 0;
+            background-color: #cce5ff; /* Light blue color */
+            overflow-x: hidden; /* Hide horizontal overflow */
+            transition: 0.3s; /* Smooth transition for the menu opening/closing */
+            padding-top: 20px; /* Space from the top of the screen */
+            display: flex;
+            flex-direction: column; /* Items arranged vertically */
+        }
+
+        /* Styles for links and buttons inside the side menu */
+        .side-menu a, .side-menu button {
+            padding: 10px 20px;
+            text-decoration: none;
+            font-size: 14px;
+            color: #08397a; /* Dark blue text */
+            border-radius: 15px;
+            display: flex;
+            align-items: center; /* Align icons and text */
+            width: 100%;
+            background: none;
+            border: none;
+            text-align: left;
+            cursor: pointer;
+            transition: background-color 0.3s; /* Transition for hover effect */
+        }
+
+        /* Styles for icons within the side menu links and buttons */
+        .side-menu a i, .side-menu button i {
+            margin-right: 8px; /* Right margin for icons */
+            margin-left: 8px; /* Left margin for icons */
+            font-size: 10px; /* Smaller icon size */
+        }
+
+        /* Hover effect for side menu items */
+        .side-menu a:hover, .side-menu button:hover {
+            background-color: #99c2ff; /* Light blue background on hover */
+        }
+
+        /* Menu icon styles */
+        .menu-icon {
+            font-size: 20px;
+            color: #1465bb; /* Dark blue color */
+            cursor: pointer; /* Pointer cursor on hover */
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+
+        /* Header styles */
+        .header {
+            display: flex;
+            justify-content: space-between; /* Space out items */
+            align-items: center;
+            padding: 10px;
+            background-color: white;
+            color: #1465bb;
+        }
+
+        /* Header title styles */
+        .header h1 {
+            flex-grow: 1; /* Allow header title to take remaining space */
+            text-align: center;
+            margin: 0;
+            font-size: 24px;
+        }
+
+        /* Button styles */
+        .btn-iniciar,
+        .btn-logout,
+        .btn-index,
+        button[type="submit"]:not(.save-btn):not(.back-btn) {
+            padding: 10px 20px;
+            background-color: #1465bb; /* Dark blue button */
+            color: white;
+            text-decoration: none;
+            border-radius: 15px;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            margin: 5px;
+            display: inline-block;
+            border: none; /* Remove border */
+            cursor: pointer; /* Pointer cursor */
+        }
+
+        /* Hover effect for buttons */
+        .btn-iniciar:hover,
+        .btn-logout:hover,
+        .btn-index,
+        button[type="submit"]:not(.save-btn):not(.back-btn):hover {
+            background-color: #104a91; /* Darker blue on hover */
+        }
+
+        /* Container styles for the form */
+        .container {
+            max-width: 95%;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Heading styles */
+        h2 {
+            text-align: center;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        input, textarea {
+            width: calc(100%);
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 15px;
+            font-size: 16px;
+            margin-top: 5px;
+            background-color: #f8f9fa; /* Fundo levemente cinza */
+            box-sizing: border-box;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #1465bb;
+            margin-bottom: 10px;
+        }
+
+        .user-details {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            text-align: left !important; 
+            font-size: 14px;
+            color: white;
+        }
+
+        .user-details p {
+            margin: 5px 0;
+        }
+
+        .notification-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #2c3e50; /* Azul escuro */
+            color: #ecf0f1; /* Texto em cinza claro */
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.5);
+            font-family: Arial, sans-serif;
+            width: 300px; /* Definir um tamanho fixo para a largura */
+        }
+
+        .notification-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%; /* Garante que o conteúdo ocupe toda a largura disponível */
+        }
+
+        .notification-content p {
+            margin: 0;
+            font-size: 18px;
+            flex-grow: 1; /* Faz o texto ocupar o máximo de espaço disponível */
+        }
+
+        .notification-content button {
+            background-color: #34495e; /* Tom de azul mais claro */
+            border: 2px solid #16a085; /* Borda verde-água */
+            color: #ecf0f1; /* Cor do texto do botão */
+            font-size: 20px;
+            cursor: pointer;
+            margin-left: 10px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            transition: background-color 0.3s, color 0.3s;
+            width: 40px; /* Definir o width fixo do botão */
+            height: 40px; /* Tornar o botão quadrado */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .notification-content button:hover {
+            background-color: #16a085; /* Cor do fundo ao passar o mouse */
+            color: #fff; /* Cor do texto ao passar o mouse */
+        }
+
+        .notification-content button:focus {
+            outline: none; /* Remove o contorno ao focar no botão */
+        }
+
+        /* Adicionando estilo para o SVG no topo do menu lateral */
+        .menu-logo {
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Ajusta a largura e a altura do SVG */
+        .menu-logo svg {
+            width: 100%;  /* Largura do logo */
+            height: 30px;  /* Altura do logo */
+        }
+
+        .menu-container {
+            width: 100%;
+            max-width: 96%;
+            margin: 10px;
+            border-radius: 15px;
+            background: #f8f9fa;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        label {
+            display: block;
+            margin-top: 25px;
+        }
+
+        .menu-header {
+            text-align: left;
+            font-weight: bold;
+            color: #1465bb;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .content-container {
+            width: 100%;
+            max-width: 96%;
+            margin: 10px;
+            border-radius: 15px;
+            background: #f8f9fa;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .save-btn {
+            right: 10px;
+            bottom: 15px;
+            background: #1465bb;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .save-btn:hover {
+            background-color: #104a91;
+        }
+
+        .back-btn {
+            right: 10px;
+            bottom: 15px;
+            background: #1465bb;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-btn:hover {
+            background-color: #104a91;
+        }
+
+        .menu-section {
+            margin-top: 5px;
+            padding-top: 10px;
+            border-bottom: 1px solid #90caf9; /* azul claro */
+        }
+
+        .menu-label {
+            font-size: 12px;
+            color: #90caf9; /* azul um pouco mais vibrante */
+            margin-bottom: 5px;
+            padding-left: 10px;
+        }
+
+        .buttons-container {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu-dropdown {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .dropdown-toggle {
+            width: 100%;
+            text-align: left;
+            padding: 10px;
+            background: #f0f0f0;
+            border: none;
+            cursor: pointer;
+        }
+
+        .dropdown-toggle:hover {
+            background: #e0e0e0;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: relative;
+            flex-direction: column;
+            background-color: #ffffff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            z-index: 1;
+            margin-left: 10px;
+            border-radius: 15px;
+        }
+
+        .dropdown-menu button {
+            padding: 10px;
+            background-color: #fafafa;
+            border: none;
+            text-align: left;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .dropdown-menu button:hover {
+            background-color: #f0f0f0;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Menu Icon to open the side menu -->
+    <span class="menu-icon" onclick="toggleMenu()">&#9776;</span>
+
+    <!-- Side menu -->
+    <div id="sideMenu" class="side-menu">
+        <div class="menu-logo">
+            <svg width="150" height="30" xmlns="http://www.w3.org/2000/svg">
+                <style>
+                    .text {
+                        font: bold 24px 'Helvetica Neue', sans-serif; /* Reduzindo o tamanho da fonte */
+                    }
+                    .ai {
+                        fill: #1E90FF;
+                    }
+                    .iq {
+                        fill: #C0C0C0;
+                    }
+                </style>
+                <rect width="100%" height="100%" fill="none"/> <!-- Fundo transparente -->
+                <text x="50%" y="80%" class="text" text-anchor="middle" alignment-baseline="central">
+                    <tspan class="ai">AI</tspan><tspan class="iq">IQ</tspan>
+                </text>
+            </svg>            
+        </div>
+        
+        <!-- Informações do usuário no menu lateral -->
+        <div class="user-details">
+            <p><i class="fas fa-user"></i> User: {{ user_name }}</p>
+            <p><i class="fas fa-star"></i> Plan: {{ user_data.plantype.capitalize() if user_data and user_data.plantype else 'Unknown' }}</p>
+        </div>
+
+        <!-- Workspace Section -->
+        <div class="menu-section">
+            <div class="menu-label">Workspace</div>
+            <!-- Buttons for navigation inside the side menu -->
+            <button onclick="navigateTo('{{ url_for('chatbot') }}')">
+                <i class="fas fa-comments"></i> Chat
+            </button>
+            <!-- Data Analysis AI - with submenu -->
+            <div class="menu-dropdown">
+                <button class="dropdown-toggle">
+                    <i class="fas fa-chart-bar"></i> Data Analysis AI ▾
+                </button>
+                <div class="dropdown-menu">
+                    <button onclick="navigateTo('{{ url_for('data_analysis_googlesheets') }}')">Google Sheets</button>
+                    <button onclick="navigateTo('{{ url_for('data_analysis') }}')">Upload CSV</button>
+                </div>
+            </div>
+            <!-- Data Analysis Dashboard - with submenu -->
+            <div class="menu-dropdown">
+                <button class="dropdown-toggle">
+                    <i class="fas fa-chart-area"></i> Data Dashboard ▾
+                </button>
+                <div class="dropdown-menu">
+                    <button onclick="navigateTo('{{ url_for('visual_data_googlesheets') }}')">Google Sheets</button>
+                    <button onclick="navigateTo('{{ url_for('visual_data') }}')">Upload CSV</button>
+                </div>
+            </div>
+            <button onclick="navigateTo('{{ url_for('index') }}')">
+                <i class="fas fa-home"></i> Menu
+            </button>
+            <!-- Button to navigate to the admin settings page (only visible if the user is an admin) -->
+            {% if is_admin %}
+                <button onclick="navigateTo('{{ url_for('admin') }}')">
+                    <i class="fas fa-cogs"></i> Settings
+                </button>
+            {% endif %}
+            <button onclick="navigateTo('{{ url_for('view_news', business_id=business_id, page=1) }}')">
+                <i class="fas fa-newspaper"></i> News
+            </button>
+            <button onclick="navigateTo('{{ url_for('notebook') }}')">
+                <i class="fas fa-book"></i> Notebook
+            </button>
+        </div>
+        
+        <!-- Help Section -->
+        <div class="menu-section">
+            <div class="menu-label">Help</div>
+            <!-- Button to help -->
+            <button onclick="window.open('{{ url_for('help') }}', '_blank')">
+                <i class="fas fa-question-circle"></i> Help
+            </button>
+        </div>
+
+        <!-- Exit Section -->
+        <div class="menu-section">
+            <div class="menu-label">Exit</div>
+            <!-- Button to log out of the system -->
+            <button onclick="navigateTo('{{ url_for('logout') }}')">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+            <!-- Button to close the side menu -->
+            <button onclick="closeMenu()">
+                <i class="fas fa-times"></i> Close
+            </button>
+        </div>
+    </div>
+
+    <!-- Header Section -->
+    <div class="header">
+        <div class="menu-logo">
+            <a href="/index" class="logo-link">
+                <svg width="150" height="30" xmlns="http://www.w3.org/2000/svg">
+                    <style>
+                        .text {
+                            font: bold 24px 'Helvetica Neue', sans-serif; /* Reduzindo o tamanho da fonte */
+                        }
+                        .ai {
+                            fill: #1E90FF;
+                        }
+                        .iq {
+                            fill: #C0C0C0;
+                        }
+                        .logo-link:hover .ai {
+                            fill: #104E8B;
+                        }
+                        .logo-link:hover .iq {
+                            fill: #808080;
+                        }
+                    </style>
+                    <rect width="100%" height="100%" fill="none"/> <!-- Fundo transparente -->
+                    <text x="50%" y="80%" class="text" text-anchor="middle" alignment-baseline="central">
+                        <tspan class="ai">AI</tspan><tspan class="iq">IQ</tspan>
+                    </text>
+                </svg>
+            </a>          
+        </div>
+    </div>
+
+    <div class="container">
+        <form method="POST">
+            <div class="menu-container">
+                <label class="menu-header" for="question">Intro:</label>
+                <div class="content-container">
+                    <input type="text" id="question" name="question" value="{{ info['question'] }}" required>
+                </div>
+        
+                <label class="menu-header" for="answer">Document:</label>
+
+                <div class="content-container">
+                    <textarea id="answer" name="answer" required>{{ info['answer'] }}</textarea>
+                </div>
+            </div>
+        
+            <div class="content-container">
+                <div class="buttons-container">
+                    <button type="submit" class="save-btn" title="Save Document" name="action" value="save">
+                        <i class="fas fa-save"></i>
+                    </button>
+                    <button type="submit" class="back-btn" title="Back" name="action" value="back">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <div id="notification" class="notification-overlay">
+            <div class="notification-content">
+                <p id="notification-message"></p>
+                <button onclick="hideNotification()">×</button>
+            </div>
+        </div> 
+
+    </div>
+
+    <script>
+        /* Function to toggle the visibility of the side menu */
+        function toggleMenu() {
+            var menu = document.getElementById('sideMenu');
+            if (menu.style.display === 'block') {
+                menu.style.display = 'none'; /* Hide menu */
+                menu.style.width = '0'; /* Set width to zero */
+            } else {
+                menu.style.display = 'block'; /* Show menu */
+                menu.style.width = '250px'; /* Set width */
+            }
+        }
+
+        /* Function to close the side menu */
+        function closeMenu() {
+            var menu = document.getElementById('sideMenu');
+            menu.style.width = '0'; /* Set width to zero */
+            menu.style.display = 'none'; /* Hide menu */
+        }
+
+        /* Function to navigate to a specific URL */
+        function navigateTo(url) {
+            window.location.href = url;
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById("notification");
+            const messageElement = document.getElementById("notification-message");
+
+            if (notification && messageElement) {
+                messageElement.textContent = message;
+                notification.style.display = "block";
+
+                // Esconder a notificação automaticamente após 5 segundos
+                setTimeout(() => {
+                    notification.style.display = "none";
+                }, 5000);
+            }
+        }
+
+        function hideNotification() {
+            document.getElementById("notification").style.display = "none";
+        }
+
+        // Verifica se há uma mensagem de notificação via Flash do Flask
+        window.onload = function() {
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    showNotification("{{ messages[0] }}");
+                {% endif %}
+            {% endwith %}
+        };
+
+        document.querySelectorAll('.dropdown-toggle').forEach(button => {
+            button.addEventListener('click', () => {
+                const dropdownMenu = button.nextElementSibling;
+                const isOpen = dropdownMenu.style.display === 'flex';
+
+                // Fecha todos os outros dropdowns
+                document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                    menu.style.display = 'none';
+                });
+
+                // Abre o menu clicado
+                dropdownMenu.style.display = isOpen ? 'none' : 'flex';
+            });
+        });
+
+    </script>
+
+</body>
+</html>

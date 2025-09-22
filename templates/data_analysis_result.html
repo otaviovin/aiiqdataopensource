@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultado da Análise de Dados - AIIQ</title>
+    <!-- Including FontAwesome for icons -->
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        .menu-icon {
+            font-size: 20px;
+            color: #1465bb;
+            cursor: pointer; 
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+
+        .side-menu {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            background-color: #cce5ff;
+            overflow-x: hidden;
+            transition: 0.3s;
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .side-menu a, .side-menu button {
+            padding: 10px 20px;
+            text-decoration: none;
+            font-size: 14px;
+            color: #08397a;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            background: none;
+            border: none;
+            text-align: left;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .side-menu a i, .side-menu button i {
+            margin-right: 8px;
+            margin-left: 8px;
+            font-size: 10px;
+        }
+
+        .side-menu a:hover, .side-menu button:hover {
+            background-color: #99c2ff;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: white;
+            color: #1465bb;
+        }
+
+        .header h1 {
+            flex-grow: 1;
+            text-align: center;
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .header .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .container {
+            max-width: 95%;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart {
+            margin: 20px 0;
+        }
+
+        .summary {
+            text-align: justify; 
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background-color: #1465bb;
+            color: white;
+            font-size: 16px;
+            border-radius: 15px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: inline-block;
+            margin-top: 10px;
+            width: 250px !important;
+        }
+
+        .btn:hover {
+            background-color: #104a91;
+        }
+
+        .user-details {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            text-align: left !important; 
+            font-size: 14px;
+            color: white;
+        }
+
+        .user-details p {
+            margin: 5px 0;
+        }
+
+        /* Adicionando estilo para o SVG no topo do menu lateral */
+        .menu-logo {
+            display: flex;
+            justify-content: center;
+        }
+
+        .menu-logo svg {
+            width: 100%; 
+            height: 30px; 
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 250px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 5px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%; /* Position above the button */
+            left: 50%;
+            margin-left: -100px; /* Center the tooltip */
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Ajuste para o botão Info */
+        .info-btn {
+            padding: 10px;  /* Ajuste o padding conforme necessário para o ícone */
+            width: auto !important;  /* Define a largura como automática, ajustando-se ao tamanho do ícone */
+            background-color: #1465bb; /* Cor de fundo do botão */
+            border-radius: 15px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .info-btn i {
+            font-size: 20px; /* Tamanho do ícone */
+            color: white;
+        }
+
+        .info-btn:hover {
+            background-color: #104a91; /* Cor de fundo ao passar o mouse */
+        }
+
+        .info-btn:hover i {
+            font-size: 20px; /* Tamanho do ícone */
+            color: #C0C0C0;
+        }
+
+        .image-container {
+            position: relative;
+            overflow: hidden;
+            width: 100%; /* Ajuste conforme necessário */
+            max-width: 800px; /* Define um tamanho máximo */
+            margin: auto;
+            border: 2px solid #ccc; /* Adiciona uma borda para destacar os limites */
+            border-radius: 10px; /* Bordas arredondadas */
+        }
+
+        .image-container img {
+            width: 100%;
+            transition: transform 0.3s ease;
+        }
+
+        .image-container:hover img {
+            transform: scale(1.5); /* Ajuste o valor para mais ou menos zoom */
+        }
+
+        .zoomable {
+            width: 100%;
+            transition: transform 0.3s ease;
+            transform-origin: center;
+        }
+
+        .zoom-container {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            max-width: 1000px;
+            overflow: auto;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            background: #f8f8f8;
+            white-space: nowrap;
+        }
+
+        .zoom-container img {
+            transition: transform 0.3s ease;
+            transform-origin: top left;
+            cursor: zoom-in;
+        }
+
+        .zoom-container.zoom-active img {
+            transform: scale(3);
+            cursor: zoom-out;
+        }
+
+        .no-print {
+            display: inline-block;
+        }
+
+        .description, summary {
+            page-break-inside: avoid;
+            break-inside: avoid;
+            text-align: center;
+        }
+
+        .menu-section {
+            margin-top: 5px;
+            padding-top: 10px;
+            border-bottom: 1px solid #90caf9; /* azul claro */
+        }
+
+        .menu-label {
+            font-size: 12px;
+            color: #90caf9; /* azul um pouco mais vibrante */
+            margin-bottom: 5px;
+            padding-left: 10px;
+        }
+
+        textarea {
+            width: 100%; 
+            max-width: 100%;
+            height: 60px;
+            padding: 10px 60px 10px 15px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 15px;
+            resize: none;
+            box-sizing: border-box;
+            background-color: white; 
+            margin-bottom: 10px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 96%;
+            margin: 10px;
+            border-radius: 15px;
+            background: #f8f9fa;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .chat-header {
+            text-align: justify;
+            font-weight: bold;
+            color: #1465bb;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .chat-input-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .send-btn {
+            position: absolute;
+            right: 10px;
+            bottom: 25px;
+            background: #1465bb;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .send-btn:hover {
+            background-color: #104a91;
+        }
+
+        .buttons-container {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu-btn {
+            right: 10px;
+            bottom: 15px;
+            background: #1465bb;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .menu-btn:hover {
+            background-color: #104a91;
+        }
+
+        .back-btn {
+            right: 10px;
+            bottom: 15px;
+            background: #1465bb;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-btn:hover {
+            background-color: #104a91;
+        }
+
+        .download-btn {
+            right: 10px;
+            bottom: 15px;
+            background: #1465bb;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .download-btn:hover {
+            background-color: #104a91;
+        }
+
+        #charLimitMsg {
+            font-size: 12px;
+            color: #666;
+            text-align: right;
+            width: 100%;
+            margin-top: -15px;
+            margin-bottom: 10px;
+        }
+
+        /* Chatbox area where the messages will appear */
+        .chatbox {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            height: 500px;
+        }
+
+        /* Styling for each message */
+        .message {
+            display: flex;
+            margin-bottom: 15px;
+            align-items: flex-start;
+        }
+
+        /* Styling for message text */
+        .message p {
+            max-width: 60%;
+            padding: 10px;
+            border-radius: 15px;
+            margin: 0;
+            word-wrap: break-word;
+        }
+
+        /* Styling for chatbot message */
+        .chatbot-message {
+            justify-content: flex-start;
+        }
+
+        .chatbot-message p {
+            background-color: #f0f0f0;
+            text-align: left;
+            font-size: 14px;
+            border-radius: 15px 15px 15px 0;
+        }
+
+        /* Styling for user message */
+        .user-message {
+            justify-content: flex-end;
+        }
+
+        .user-message p {
+            background-color: #d0f0c0;
+            text-align: right;
+            font-size: 14px;
+            border-radius: 15px 15px 0 15px;
+        }
+
+        .content-container {
+            width: 100%;
+            max-width: 96%;
+            margin-left: 10px;
+            margin-right: 10px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            border-radius: 15px;
+            background: #f8f9fa;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .menu-dropdown {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .dropdown-toggle {
+            width: 100%;
+            text-align: left;
+            padding: 10px;
+            background: #f0f0f0;
+            border: none;
+            cursor: pointer;
+        }
+
+        .dropdown-toggle:hover {
+            background: #e0e0e0;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: relative;
+            flex-direction: column;
+            background-color: #ffffff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            z-index: 1;
+            margin-left: 10px;
+            border-radius: 15px;
+        }
+
+        .dropdown-menu button {
+            padding: 10px;
+            background-color: #fafafa;
+            border: none;
+            text-align: left;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .dropdown-menu button:hover {
+            background-color: #f0f0f0;
+        }
+
+        .summary-text {
+            text-align: left;
+            margin-top: 10px;
+            font-size: 16px;
+            line-height: 1.5;
+            color: #333;
+        }
+
+        @media print {
+            img, .description, .summary, h2, h3, p {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+
+            #report {
+                page-break-after: auto;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Icon to trigger the opening of the side menu -->
+    <span class="menu-icon no-print" onclick="toggleMenu()">&#9776;</span>
+
+    <!-- Side Menu -->
+    <div id="sideMenu" class="side-menu no-print">
+        <div class="menu-logo">
+            <svg width="150" height="30" xmlns="http://www.w3.org/2000/svg">
+                <style>
+                    .text {
+                        font: bold 24px 'Helvetica Neue', sans-serif; /* Reduzindo o tamanho da fonte */
+                    }
+                    .ai {
+                        fill: #1E90FF;
+                    }
+                    .iq {
+                        fill: #C0C0C0;
+                    }
+                </style>
+                <rect width="100%" height="100%" fill="none"/> <!-- Fundo transparente -->
+                <text x="50%" y="80%" class="text" text-anchor="middle" alignment-baseline="central">
+                    <tspan class="ai">AI</tspan><tspan class="iq">IQ</tspan>
+                </text>
+            </svg>            
+        </div>
+
+        <!-- Informações do usuário no menu lateral -->
+        <div class="user-details">
+            <p><i class="fas fa-user"></i> User: {{ user_name if user_name else 'User'}}</p>
+            <p><i class="fas fa-star"></i> Plan: {{ user_data.plantype.capitalize() if user_data and user_data.plantype else 'Unknown' }}</p>
+        </div>
+
+        <!-- Workspace Section -->
+        <div class="menu-section">
+            <div class="menu-label">Workspace</div>
+            <!-- Button to navigate to the chatbot page -->
+            <button onclick="navigateTo('{{ url_for('chatbot') }}')">
+                <i class="fas fa-comments"></i> Chat
+            </button>
+            <button onclick="navigateTo('{{ url_for('index') }}')">
+                <i class="fas fa-home"></i> Menu
+            </button>
+            <!-- Data Analysis Dashboard - with submenu -->
+            <div class="menu-dropdown">
+                <button  class="dropdown-toggle">
+                    <i class="fas fa-chart-area"></i> Data Dashboard ▾
+                </button>
+                <div class="dropdown-menu">
+                    <button onclick="navigateTo('{{ url_for('visual_data_googlesheets') }}')">Google Sheets</button>
+                    <button onclick="navigateTo('{{ url_for('visual_data') }}')">Upload CSV</button>
+                </div>
+            </div>
+            <!-- Button to navigate to the admin settings page (only visible if the user is an admin) -->
+            {% if is_admin %}
+                <button onclick="navigateTo('{{ url_for('admin') }}')">
+                    <i class="fas fa-cogs"></i> Settings
+                </button>
+            {% endif %}
+            <button onclick="navigateTo('{{ url_for('view_news', business_id=business_id, page=1) }}')">
+                <i class="fas fa-newspaper"></i> News
+            </button>
+            <button onclick="navigateTo('{{ url_for('notebook') }}')">
+                <i class="fas fa-book"></i> Notebook
+            </button>
+        </div>
+        
+        <!-- Help Section -->
+        <div class="menu-section">
+            <div class="menu-label">Help</div>
+            <!-- Button to help -->
+            <button onclick="window.open('{{ url_for('help') }}', '_blank')">
+                <i class="fas fa-question-circle"></i> Help
+            </button>
+        </div>
+
+        <!-- Exit Section -->
+        <div class="menu-section">
+            <div class="menu-label">Exit</div>
+            <!-- Button to log out of the system -->
+            <button onclick="navigateTo('{{ url_for('logout') }}')">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+            <!-- Button to close the side menu -->
+            <button onclick="closeMenu()">
+                <i class="fas fa-times"></i> Close
+            </button>
+        </div>
+    </div>
+
+    <!-- Header Section -->
+    <div class="header">
+        <div class="menu-logo">
+            <a href="/index" class="logo-link">
+                <svg width="150" height="30" xmlns="http://www.w3.org/2000/svg">
+                    <style>
+                        .text {
+                            font: bold 24px 'Helvetica Neue', sans-serif; /* Reduzindo o tamanho da fonte */
+                        }
+                        .ai {
+                            fill: #1E90FF;
+                        }
+                        .iq {
+                            fill: #C0C0C0;
+                        }
+                        .logo-link:hover .ai {
+                            fill: #104E8B;
+                        }
+                        .logo-link:hover .iq {
+                            fill: #808080;
+                        }
+                    </style>
+                    <rect width="100%" height="100%" fill="none"/> <!-- Fundo transparente -->
+                    <text x="50%" y="80%" class="text" text-anchor="middle" alignment-baseline="central">
+                        <tspan class="ai">AI</tspan><tspan class="iq">IQ</tspan>
+                    </text>
+                </svg>
+            </a>           
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="chat-container">
+            <div class="chat-header">Data Analisys Result</div>
+         
+            <!-- Exibir gráficos -->
+            <div class="descriptions">
+                {% for i in range(charts|length) %}
+                    <div class="description">
+                        <!-- Exibe o gráfico -->
+                        <div class="zoom-container">
+                            <img class="zoomable" src="data:image/svg+xml;base64,{{ charts[i] }}" alt="Gráfico de Análise"/>
+                        </div>
+
+                        <!-- Exibe o botão de info com a tooltip -->
+                        <div class="tooltip no-print">
+                            <button class="info-btn">
+                                <i class="fas fa-info-circle"></i> <!-- Ícone de informação -->
+                            </button>
+                            <div class="tooltiptext"><strong></strong>What does this analysis show?</strong> {{ explanations[i] }}</div>
+                        </div>
+                        <!-- Exibe a descrição do gráfico com o resumo da análise --> 
+                        <p class="summary-text">
+                            <strong>Summary of chart result:</strong> {{ explanationsai[i] if explanationsai is defined else 'Not available' }} .
+                        </p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Exibir o resumo -->
+        <div class="summary">
+            <div class="chat-container">
+                <div class="chat-header no-print">Overall summary of the data analysis</div>
+                <p class="summary-text">
+                    {{ summary }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="chat-container">
+            <div class="chat-header">Chat with your data analysis</div>
+        
+            <form id="chatdataForm" enctype="multipart/form-data" method="POST">
+                <!-- Chatbox where messages are displayed -->
+                <div class="chatbox" id="chatbox">
+                    <!-- Initial welcome message from the chatbot -->
+                    <div class="message chatbot-message">
+                        <p><strong>Chat:</strong> You generated your Data Analysis. What is your question about your Data Analysis?</p>
+                    </div>
+                </div>
+                <div class="chat-input-container no-print">
+                    <textarea id="user_input_chat" name="user_input_chat" rows="4" placeholder="Chat with yourd data..."></textarea>
+                    <button type="submit" class="send-btn" title="Start Analysis" onclick="sendMessage()">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="content-container">
+            <div class="buttons-container">
+                <!-- Botão de Voltar para Admin -->
+                <button class="menu-btn no-print" title="Home" onclick="window.location.href='{{ url_for('index') }}'">
+                    <i class="fas fa-home"></i>
+                </button>
+                <button class="back-btn no-print" title="Back" onclick="window.location.href='{{ url_for('data_analysis') }}'">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <!-- <button class="no-print"><i class="fas fa-share-alt"></i></button> -->
+                <button class="download-btn no-print" onclick="generatePDF()">
+                    <i class="fas fa-download"></i>
+                </button>
+                <!-- <button class="no-print"><i class="fas fa-copy"></i></button> -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <script>
+        // Function to toggle the side menu visibility
+        function toggleMenu() {
+            var menu = document.getElementById('sideMenu');
+            if (menu.style.display === 'block') {
+                menu.style.display = 'none'; // Hide the menu if it's currently visible
+                menu.style.width = '0'; // Set width to 0 when hidden
+            } else {
+                menu.style.display = 'block'; // Show the menu
+                menu.style.width = '250px'; // Set the width of the menu
+            }
+        }
+
+        // Function to close the side menu
+        function closeMenu() {
+            var menu = document.getElementById('sideMenu');
+            menu.style.width = '0'; // Set width to 0 when closing
+            menu.style.display = 'none'; // Hide the menu
+        }
+
+        // Function to navigate to a specific URL
+        function navigateTo(url) {
+            window.location.href = url; // Change the current page to the provided URL
+        }
+
+        function generatePDF() {
+            const elementsToHide = document.querySelectorAll('.no-print');
+            const originalDisplay = [];
+            elementsToHide.forEach((el, i) => {
+                originalDisplay[i] = el.style.display;
+                el.style.display = 'none';
+            });
+
+            const element = document.getElementById('report');
+            const opt = {
+                margin: 0.5,
+                filename: 'data_analysis_result.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 3, useCORS: true, scrollY: 0 },
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Espera todas as imagens carregarem antes de gerar o PDF
+            const images = element.querySelectorAll('img');
+            const promises = Array.from(images).map(img => {
+                if (img.complete) return Promise.resolve();
+                return new Promise(resolve => { img.onload = img.onerror = resolve; });
+            });
+
+            Promise.all(promises).then(() => {
+                window.scrollTo(0, 0);
+
+                setTimeout(() => {
+                    html2pdf().set(opt).from(element).save().then(() => {
+                        elementsToHide.forEach((el, i) => {
+                            el.style.display = originalDisplay[i] || '';
+                        });
+                    });
+                }, 500);
+            });
+        }
+
+        // Get the logged-in user's name from the backend
+        const userName = "{{ user_name }}"; // This is dynamically replaced by the server
+        
+        document.getElementById('chatdataForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent form from submitting normally
+            sendMessage(); // Call JS function instead
+        });
+
+        // Function to send a message from the user and handle the chatbot's response
+        function sendMessage() {
+            const userMessage = document.getElementById('user_input_chat').value;
+            if (userMessage) {
+                const chatbox = document.getElementById('chatbox');
+
+                // Add the user's message to the chatbox
+                const userMessageElement = document.createElement('div');
+                userMessageElement.classList.add('message', 'user-message');
+                userMessageElement.innerHTML = `<p><strong>${userName}:</strong> ${userMessage}</p>`;
+                chatbox.appendChild(userMessageElement);
+                chatbox.scrollTop = chatbox.scrollHeight; // Scroll to the bottom of the chatbox
+
+                // Clear the input field
+                document.getElementById('user_input_chat').value = '';
+
+                // Show "Typing..." message from chatbot
+                const loadingMessageElement = document.createElement('div');
+                loadingMessageElement.classList.add('message', 'chatbot-message');
+                loadingMessageElement.innerHTML = `<p><strong>Chat:</strong> <span id="typing"></span></p>`;
+                chatbox.appendChild(loadingMessageElement);
+                chatbox.scrollTop = chatbox.scrollHeight;
+
+                // Typing effect (dots)
+                let dots = 0;
+                const typingEffect = setInterval(() => {
+                    dots = (dots + 1) % 4; // Create the dots animation
+                    document.getElementById('typing').innerHTML = `${'.'.repeat(dots)}`;
+                }, 500);
+
+                // Simulate a response from the chatbot (call the backend API)
+                fetch('/ask_data', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question: userMessage })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    clearInterval(typingEffect); // Stop typing effect
+                    loadingMessageElement.innerHTML = `<p><strong>Chat:</strong> ${data.answer || 'I could not understand your question.'}</p>`;
+                })
+                .catch(() => {
+                    clearInterval(typingEffect); // Stop typing effect
+                    loadingMessageElement.innerHTML = `<p><strong>Chat:</strong> An error occurred. Please try again later.</p>`;
+                });
+            }
+        }
+
+        document.querySelectorAll('.dropdown-toggle').forEach(button => {
+            button.addEventListener('click', () => {
+                const dropdownMenu = button.nextElementSibling;
+                const isOpen = dropdownMenu.style.display === 'flex';
+
+                // Fecha todos os outros dropdowns
+                document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                    menu.style.display = 'none';
+                });
+
+                // Abre o menu clicado
+                dropdownMenu.style.display = isOpen ? 'none' : 'flex';
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const zoomables = document.querySelectorAll('.zoom-container');
+
+            zoomables.forEach(container => {
+                container.addEventListener('click', function () {
+                    this.classList.toggle('zoom-active');
+                });
+            });
+        });
+
+    </script>
+
+</body>
+</html>
