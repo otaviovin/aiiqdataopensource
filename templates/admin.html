@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Metadata for character set and viewport settings -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main - AIIQ</title>
+    <!-- Linking Font Awesome for icons -->
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Internal CSS styling -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;  /* Sets the font style */
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;  /* Light background color */
+        }
+
+        /* Styles for the side menu */
+        .side-menu {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            background-color: #cce5ff; /* Light blue background */
+            overflow-x: hidden;
+            transition: 0.3s;
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .side-menu a, .side-menu button {
+            padding: 10px 20px;
+            text-decoration: none;
+            font-size: 14px;
+            color: #08397a;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            text-align: left;
+            transition: background-color 0.3s;
+            border: none;
+            background: none;
+            cursor: pointer;
+        }
+
+        .side-menu a i, .side-menu button i {
+            margin-right: 8px; 
+            margin-left: 8px; 
+            font-size: 10px;
+        }
+
+        .side-menu a:hover, .side-menu button:hover {
+            background-color: #99c2ff;
+        }
+
+        .menu-icon {
+            font-size: 20px;
+            color: #1465bb;
+            cursor: pointer;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: white;
+            color: #1465bb;
+        }
+
+        .header h1 {
+            flex-grow: 1;
+            text-align: center;
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .container {
+            max-width: 95%;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #1465bb;
+        }
+
+        .dropdown {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #d9e3f4;
+            padding: 10px;
+            border-radius: 15px;
+            margin-top: 10px;
+            transition: background 0.3s;
+            font-size: 14px;
+        }
+
+        .dropdown:hover {
+            background-color: #cce5ff;
+        }
+
+        .dropdown h3 {
+            margin: 0;
+            flex-grow: 1;
+            text-align: left;
+        }
+
+        .dropdown span {
+            font-size: 20px;
+            transition: transform 0.3s;
+        }
+
+        .dropdown.active span {
+            transform: rotate(180deg);
+        }
+
+        .content {
+            display: none;
+            padding: 10px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 15px;
+            box-sizing: border-box;
+            background-color: white;
+        }
+
+        input[name="intro"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 15px;
+            box-sizing: border-box;
+            background-color: white;
+        }
+
+        input[type="file"] {
+            margin-top: 10px !important; 
+        }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 15px;
+            box-sizing: border-box;
+            background-color: white;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 15px;
+            background-color: #f8f9fa;
+            font-size: 14px;
+            appearance: none;
+            outline: none;
+            cursor: pointer;
+        }
+
+        select option {
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+            background: #ffffff;
+            color: #333;
+        }
+
+        select option:last-child {
+            border-bottom: none;
+        }
+
+        select option:checked {
+            background-color: #1465bb;
+            color: white;
+        }
+
+        button {
+            width: 250px;
+            padding: 10px;
+            background-color: #1465bb;
+            color: white;
+            border-radius: 15px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            align-self: center;
+        }
+
+        button:hover {
+            background-color: #104a91;
+        }
+
+        .btn-iniciar,
+        .btn-logout,
+        .btn-index,
+        button[type="submit"]:not(.add-btn):not(.view-btn):not(.add-user-btn):not(.delete-user-btn) {
+            padding: 10px 10px;
+            background-color: #1465bb;
+            color: white;
+            text-decoration: none;
+            border-radius: 15px;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            margin: 5px;
+            display: inline-block;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-iniciar:hover,
+        .btn-logout:hover,
+        .btn-index,
+        button[type="submit"]:not(.add-btn):not(.view-btn):not(.add-user-btn):not(.delete-user-btn):hover {
+            background-color: #104a91;
+        }
+
+        .welcome-title {
+            color: black;
+        }
+
+        .user-details {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            text-align: left !important; 
+            font-size: 14px;
+            color: white;
+        }
+
+        .user-details p {
+            margin: 5px 0;
+        }
+
+        .notification-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.5);
+            font-family: Arial, sans-serif;
+            width: 300px;
+        }
+
+        .notification-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%; 
+        }
+
+        .notification-content p {
+            margin: 0;
+            font-size: 18px;
+            flex-grow: 1; 
+        }
+
+        .notification-content button {
+            background-color: #34495e; 
+            border: 2px solid #16a085; 
+            color: #ecf0f1; 
+            font-size: 20px;
+            cursor: pointer;
+            margin-left: 10px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            transition: background-color 0.3s, color 0.3s;
+            width: 40px; 
+            height: 40px; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .notification-content button:hover {
+            background-color: #16a085; 
+            color: #fff; 
+        }
+
+        .notification-content button:focus {
+            outline: none; 
+        }
+
+        #document {
+            margin-top: 20px;
+        }
+
+        label {
+            display: block;
+            margin-top: 25px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .menu-logo {
+            display: flex;
+            justify-content: center;
+        }
+
+        .menu-logo svg {
+            width: 100%;  
+            height: 30px; 
+        }
+
+        #charLimitMsgQuestion, #charLimitMsgTitle {
+            font-size: 12px;
+            color: #666;
+            text-align: right;
+            margin-top: 0px;
+            margin-right: 5px;
+        }
+
+        #charLimitMsgIntro, #charLimitMsgProcedurePath {
+            font-size: 12px;
+            color: #666;
+            text-align: right;
+            margin-top: -14px;
+            margin-right: 5px;
+        }
+
+        #charLimitMsgAnswer, #charLimitMsgNews {
+            font-size: 12px;
+            color: #666;
+            text-align: right;
+            margin-top: -2px;
+            margin-right: 5px;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+
+        .loading-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 18px;
+            color: #1465bb;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .loading-box i {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+
+        .admin-info-form {
+            text-align: left;
+            background-color: #f7f7f7;
+            padding: 8px 0;
+            margin-bottom: 5px;
+            border-bottom: 1px solid #ddd;
+            border-radius: 15px;
+        }
+
+        .admin-info-form p {
+            margin: 5px;
+            padding: 0;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .menu-container {
+            width: 100%;
+            max-width: 96%;
+            margin: 10px;
+            border-radius: 15px;
+            background: #f8f9fa;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .menu-header {
+            text-align: left;
+            font-weight: bold;
+            color: #1465bb;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            height: 85%;
+            max-height: 85%;
+            background-color: var(--color-white);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            background-color: #f0f8ff;
+        }
+
+        .feature-card .icon {
+            color: var(--color-primary);
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-card p {
+            color: #666;
+        }
+
+        .document-container {
+            width: 100%;
+            max-width: 96%;
+            margin: 10px;
+            border-radius: 15px;
+            background: #f8f9fa;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .explain-container {
+            width: 100%;
+            max-width: 96%;
+            margin: 10px;
+            border-radius: 15px;
+            background: #f8f9fa;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .document-header {
+            text-align: left;
+            font-weight: bold;
+            color: #1465bb;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .explain-header {
+            text-align: left;
+            font-weight: bold;
+            color: #1465bb;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .document-input-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .attach-btn {
+            position: absolute;
+            left: 10px;
+            bottom: 28px;
+            background: #1465bb;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .attach-btn:hover {
+            background-color: #104a91;
+        }
+
+        .add-btn {
+            position: absolute;
+            right: 60px;
+            bottom: 28px;
+            background: #1465bb;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .add-btn:hover {
+            background-color: #104a91;
+        }
+
+        .add-user-btn {
+            position: absolute;
+            right: 10px;
+            bottom: 28px;
+            background: #1465bb;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .add-user-btn:hover {
+            background-color: #104a91;
+        }
+
+        .delete-user-btn {
+            position: absolute;
+            right: 10px;
+            bottom: 15px;
+            background: #1465bb;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .delete-user-btn:hover {
+            background-color: #104a91;
+        }
+
+        .view-btn {
+            position: absolute;
+            right: 10px;
+            bottom: 28px;
+            background: #1465bb;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .view-btn:hover {
+            background-color: #104a91;
+        }
+
+        .upload-area {
+            display: none;
+            width: 100%;
+            max-width: 99%;
+            margin: 10px;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            background-color: #f4f4f9;
+            transition: background-color 0.3s;
+        }
+
+        .upload-area:hover {
+            background-color: #e0ebff;
+        }
+
+        .upload-area p {
+            font-size: 16px;
+            color: #08397a;
+            margin: 10px 0;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .file-status {
+            width: 12%;
+            box-sizing: border-box;
+            color: green;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-name {
+            width: 64%;
+            box-sizing: border-box;
+            font-weight: bold;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .file-close {
+            width: 4%;
+            box-sizing: border-box;
+            color: red;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .upload-area {
+            width: 100%;
+        }
+
+        .file-upload-wrapper {
+            display: flex;
+            width: 100%;
+            box-sizing: border-box;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0;
+            padding: 20px 10px 20px 10px;
+        }
+
+        .file-upload-wrapper > div {
+            box-sizing: border-box;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .intro-input {
+            height: 70px;
+            max-width: 100%;
+            padding: 15px 120px 15px 60px;
+            word-wrap: break-word;
+            border: 1px solid #ddd;
+            border-radius: 15px;
+            resize: none;
+            box-sizing: border-box;
+            background-color: white; 
+            margin-bottom: 10px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .procedure-input {
+            height: 70px;
+            max-width: 100%;
+            padding: 15px 120px 15px 10px;
+            word-wrap: break-word;
+            border: 1px solid #ddd;
+            border-radius: 15px;
+            resize: none;
+            box-sizing: border-box;
+            background-color: white; 
+            margin-bottom: 10px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .password-input {
+            height: 70px;
+            max-width: 100%;
+            padding: 15px 120px 15px 10px;
+            word-wrap: break-word;
+            border: 1px solid #ddd;
+            border-radius: 15px;
+            resize: none;
+            box-sizing: border-box;
+            background-color: white; 
+            margin-bottom: 10px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .input-user {
+            margin: auto auto 20px auto;
+        }
+
+        .menu-section {
+            margin-top: 5px;
+            padding-top: 10px;
+            border-bottom: 1px solid #90caf9; /* azul claro */
+        }
+
+        .menu-label {
+            font-size: 12px;
+            color: #90caf9; /* azul um pouco mais vibrante */
+            margin-bottom: 5px;
+            padding-left: 10px;
+        }
+
+        .menu-dropdown {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .dropdown-toggle {
+            width: 100%;
+            text-align: left;
+            padding: 10px;
+            background: #f0f0f0;
+            border: none;
+            cursor: pointer;
+        }
+
+        .dropdown-toggle:hover {
+            background: #e0e0e0;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: relative;
+            flex-direction: column;
+            background-color: #ffffff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            z-index: 1;
+            margin-left: 10px;
+            border-radius: 15px;
+        }
+
+        .dropdown-menu button {
+            padding: 10px;
+            background-color: #fafafa;
+            border: none;
+            text-align: left;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .dropdown-menu button:hover {
+            background-color: #f0f0f0;
+        }
+
+        .container-usage p {
+            color: #0d3c61;
+        }
+        .container-usage p strong {
+            color: #0d3c61;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Link to external CSS for icons (included twice, remove one instance for efficiency) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- Icon for opening the side menu -->
+    <span class="menu-icon" onclick="toggleMenu()">&#9776;</span>
+
+    <!-- Side menu structure -->
+    <div id="sideMenu" class="side-menu">
+
+        <div class="menu-logo">
+            <svg width="150" height="30" xmlns="http://www.w3.org/2000/svg">
+                <style>
+                    .text {
+                        font: bold 24px 'Helvetica Neue', sans-serif; /* Reduzindo o tamanho da fonte */
+                    }
+                    .ai {
+                        fill: #1E90FF;
+                    }
+                    .iq {
+                        fill: #C0C0C0;
+                    }
+                </style>
+                <rect width="100%" height="100%" fill="none"/> <!-- Fundo transparente -->
+                <text x="50%" y="80%" class="text" text-anchor="middle" alignment-baseline="central">
+                    <tspan class="ai">AI</tspan><tspan class="iq">IQ</tspan>
+                </text>
+            </svg>            
+        </div>
+        
+        <!-- Informações do usuário no menu lateral -->
+        <div class="user-details">
+            <p><i class="fas fa-user"></i> User: {{ user_name }}</p>
+            <p><i class="fas fa-star"></i> Plan: {{ user_data.plantype.capitalize() if user_data and user_data.plantype else 'Unknown' }}</p>
+        </div>
+        <!-- Workspace Section -->
+        <div class="menu-section">
+            <div class="menu-label">Workspace</div>
+            <!-- Button to navigate to the chatbot page -->
+            <button onclick="navigateTo('{{ url_for('chatbot') }}')">
+                <i class="fas fa-comments"></i> Chat
+            </button>
+            <!-- Data Analysis AI - with submenu -->
+            <div class="menu-dropdown">
+                <button class="dropdown-toggle">
+                    <i class="fas fa-chart-bar"></i> Data Analysis AI ▾
+                </button>
+                <div class="dropdown-menu">
+                    <button onclick="navigateTo('{{ url_for('data_analysis_googlesheets') }}')">Google Sheets</button>
+                    <button onclick="navigateTo('{{ url_for('data_analysis') }}')">Upload CSV</button>
+                </div>
+            </div>
+            <!-- Data Analysis Dashboard - with submenu -->
+            <div class="menu-dropdown">
+                <button class="dropdown-toggle">
+                    <i class="fas fa-chart-area"></i> Data Dashboard ▾
+                </button>
+                <div class="dropdown-menu">
+                    <button onclick="navigateTo('{{ url_for('visual_data_googlesheets') }}')">Google Sheets</button>
+                    <button onclick="navigateTo('{{ url_for('visual_data') }}')">Upload CSV</button>
+                </div>
+            </div>
+            <button onclick="navigateTo('{{ url_for('index') }}')">
+                <i class="fas fa-home"></i> Menu
+            </button>
+            <button onclick="navigateTo('{{ url_for('view_news', business_id=business_id, page=1) }}')">
+                <i class="fas fa-newspaper"></i> News
+            </button>
+            <button onclick="navigateTo('{{ url_for('notebook') }}')">
+                <i class="fas fa-book"></i> Notebook
+            </button>
+        </div>
+
+        <!-- Help Section -->
+        <div class="menu-section">
+            <div class="menu-label">Help</div>
+            <!-- Button to help -->
+            <button onclick="window.open('{{ url_for('help') }}', '_blank')">
+                <i class="fas fa-question-circle"></i> Help
+            </button>
+        </div>
+
+        <!-- Exit Section -->
+        <div class="menu-section">
+            <div class="menu-label">Exit</div>
+            <!-- Button to log out of the system -->
+            <button onclick="navigateTo('{{ url_for('logout') }}')">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+            <!-- Button to close the side menu -->
+            <button onclick="closeMenu()">
+                <i class="fas fa-times"></i> Close
+            </button>
+        </div>
+    </div>
+
+    <!-- Header section with title -->
+    <div class="header">
+        <div class="menu-logo">
+            <a href="/index" class="logo-link">
+                <svg width="150" height="30" xmlns="http://www.w3.org/2000/svg">
+                    <style>
+                        .text {
+                            font: bold 24px 'Helvetica Neue', sans-serif; /* Reduzindo o tamanho da fonte */
+                        }
+                        .ai {
+                            fill: #1E90FF;
+                        }
+                        .iq {
+                            fill: #C0C0C0;
+                        }
+                        .logo-link:hover .ai {
+                            fill: #104E8B;
+                        }
+                        .logo-link:hover .iq {
+                            fill: #808080;
+                        }
+                    </style>
+                    <rect width="100%" height="100%" fill="none"/> <!-- Fundo transparente -->
+                    <text x="50%" y="80%" class="text" text-anchor="middle" alignment-baseline="central">
+                        <tspan class="ai">AI</tspan><tspan class="iq">IQ</tspan>
+                    </text>
+                </svg>
+            </a>           
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="menu-container">
+            <div class="menu-header">Settings
+                <div class="features-grid">
+                    <div class="container">
+                        <div class="feature-card" onclick="toggleDropdown(this)" data-section="user">
+                            <img src="/static/useradmin.svg" width="48" height="48" class="icon" alt="Users">
+                            <h3>Users</h3>
+                            <p>Manage your users by adding or deleting them as needed. View and control user-specific data and access.</p>
+                        </div>
+                    </div>
+                    <div class="container">
+                        <div class="feature-card" onclick="toggleDropdown(this)" data-section="data">
+                            <img src="/static/dataadmin.svg" width="48" height="48" class="icon" alt="Data">
+                            <h3>Data</h3>
+                            <p>Visualize and manage your datasets, including key statistics like distribution, median, and outliers.</p>
+                        </div>
+                    </div>
+                    <div class="container">
+                        <div class="feature-card" onclick="toggleDropdown(this)" data-section="usage">
+                            <img src="/static/usageadmin.svg" width="48" height="48" class="icon" alt="Usage">
+                            <h3>Usage</h3>
+                            <p>Track application usage with interactive charts, including chatbot interactions and data analysis activity.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-user" style="display: none;">
+        <div class="container">
+            <div class="menu-container">   
+                {% if is_admin %}
+                {% for admin in user_admin_info %}
+                <form action="{{ url_for('add_user') }}" method="POST">
+                    <label for="username" class="menu-header">Add user:</label>
+                    <div class="document-container">
+                        <input type="text" class="input-user" name="username" placeholder="User" required>
+                        <input type="email" class="input-user" name="email" placeholder="E-mail" required>
+                        
+                        <!--
+                        <input type="password" name="password" placeholder="Password" required
+                            pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,35}$"
+                            title="The password must be between 8 and 35 characters long, include uppercase and lowercase letters, at least one number, and one special character.">
+                        <button type="submit">
+                            <i class="fas fa-user-plus"></i> Add
+                        </button>
+                        -->
+
+                        <div class="document-input-container">
+                            <textarea class="password-input" type="password" name="password" placeholder="Password" required pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,35}$" title="The password must be between 8 and 35 characters long, include uppercase and lowercase letters, at least one number, and one special character."></textarea>
+                            <button type="submit" class="add-user-btn" title="Add User">
+                                <i class="fas fa-user-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <form action="{{ url_for('delete_user') }}" method="POST">
+                    <label for="username" class="menu-header">Delete user:</label>
+
+                    <!--
+                    <select name="username" id="username" size="5">
+                        {% for user in users %}
+                            <option value="{{ user.username }}" data-email="{{ user.email }}" data-password="{{ user.password }}">
+                                {{ user.username }} - {{ user.email }} - {{ user.password }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit">
+                        <i class="fas fa-user-minus"></i> Delete
+                    </button>
+                    -->
+                    <div class="document-container">
+                        <div class="document-input-container">
+                            <select name="username" id="username" size="5">
+                                {% for user in users %}
+                                    <option value="{{ user.username }}" data-email="{{ user.email }}" data-password="{{ user.password }}">
+                                        {{ user.username }} - {{ user.email }} - {{ user.password }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="delete-user-btn" title="Delete User">
+                                <i class="fas fa-user-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                {% endfor %}
+                {% endif %} 
+            </div>  
+        </div>
+    </div>
+
+    <div class="container-data" style="display: none;">
+        <div class="container">
+            <div class="menu-container">
+                {% if is_admin %}
+                <form action="{{ url_for('add_question_and_answer') }}" method="POST">
+                    <label for="username" class="menu-header">Add question, answer, and where to find information</label>
+                    <div class="document-container">
+                        <input type="text" name="question" maxlength="200" oninput="updateCharCount('question', 'charLimitMsgQuestion')" placeholder="Question" required>
+                        <p id="charLimitMsgQuestion"><span id="char_count">0</span>/200</p>
+
+                        <textarea name="answer" maxlength="1200" oninput="updateCharCount('answer', 'charLimitMsgAnswer')" placeholder="Answer" required style="height: 200px; resize: vertical;"></textarea>
+                        <p id="charLimitMsgAnswer"><span id="char_count">0</span>/1200</p>
+
+                        <!--
+                        <input type="text" name="procedure_path" maxlength="100" oninput="updateCharCount('procedure_path', 'charLimitMsgProcedurePath')" placeholder="Where to find more information" required>
+                        <p id="charLimitMsgProcedurePath"><span id="char_count">0</span>/100</p>
+
+                        <button type="submit">
+                            <i class="fas fa-plus"></i> Add
+                        </button>
+                        <button type="button" onclick="window.location.href='{{ url_for('view_questions_and_answers', business_id=business_id, page=1) }}'">
+                            <i class="fas fa-newspaper"></i> View Data
+                        </button>
+                        -->
+
+                        <div class="document-input-container">
+                            <textarea class="procedure-input" name="procedure_path" maxlength="100" oninput="updateCharCount('procedure_path', 'charLimitMsgProcedurePath')" placeholder="Where to find more information" required></textarea>
+                            <button type="submit" class="add-btn" title="Add Question Answer Procudure Path">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <button type="submit" class="view-btn" title="View Question Answer Procudure Path" onclick="window.location.href='{{ url_for('view_questions_and_answers', business_id=business_id, page=1) }}'">
+                               <i class="fas fa-newspaper"></i>
+                            </button>
+                            <p id="charLimitMsgProcedurePath"><span id="char_count">0</span>/100</p>
+                        </div>
+                    </div>
+                </form>
+
+                <form action="{{ url_for('add_document') }}" method="POST" enctype="multipart/form-data">
+                    <label for="username" class="menu-header">Add document (.pdf)</label>
+                    <div class="document-container">
+                        <div class="document-input-container">
+                            <button type="button" class="attach-btn" title="Attach File" onclick="triggerFileUpload()">
+                                <i class="fas fa-paperclip"></i>
+                            </button>
+                            <textarea class="intro-input" name="intro" maxlength="200" oninput="updateCharCount('intro', 'charLimitMsgIntro')" placeholder="Intro" required></textarea>
+                            <button type="submit" class="add-btn" title="Add Document">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <button type="submit" class="view-btn" title="View Document" onclick="window.location.href='{{ url_for('view_documents', business_id=business_id, page=1) }}'">
+                               <i class="fas fa-newspaper"></i>
+                            </button>
+                            <p id="charLimitMsgIntro" class="charlimitmsgintro"><span id="char_count">0</span>/200</p>
+                        </div>
+                    </div>
+
+                    <div class="upload-area" id="drop-area">
+                        <div class="file-upload-wrapper">
+                            <span id="file-status" class="file-status" style="color: green;">
+                                <i class="fas fa-check-circle"></i> File uploaded
+                            </span>
+                            <input type="file" id="fileInput" name="fileInput" accept=".pdf" required>
+                            <span id="file-name" class="file-name" style="margin-left: 10px; font-weight: bold;"></span>
+                            <span id="file-close" class="file-close"><strong>x</strong></span>
+                        </div>       
+                    </div>
+                </form>
+                    
+                <form action="{{ url_for('add_news') }}" method="POST">
+                    <label for="username" class="menu-header">Add news</label>
+                    <div class="document-container">
+                        <input type="text" name="title" maxlength="300" oninput="updateCharCount('title', 'charLimitMsgTitle')" placeholder="Title" required>
+                        <p id="charLimitMsgTitle"><span id="char_count">0</span>/300</p>
+
+                        <!--
+                        <textarea name="news" maxlength="1500" oninput="updateCharCount('news', 'charLimitMsgNews')" placeholder="News" required style="height: 400px; resize: vertical;"></textarea>
+                        <p id="charLimitMsgNews"><span id="char_count">0</span>/1500</p>
+
+                        <button type="submit">
+                            <i class="fas fa-plus"></i> Add
+                        </button>
+                        <button type="button" onclick="window.location.href='{{ url_for('view_news', business_id=business_id, page=1) }}'">
+                            <i class="fas fa-newspaper"></i> View Data
+                        </button>
+                        -->
+
+                        <div class="document-input-container">
+                            <textarea name="news" maxlength="10000" oninput="updateCharCount('news', 'charLimitMsgNews')" placeholder="News" required style="height: 400px; resize: vertical;"></textarea>
+                            <button type="submit" class="add-btn" title="Add News">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <button type="submit" class="view-btn" title="View News" onclick="window.location.href='{{ url_for('view_news', business_id=business_id, page=1) }}'">
+                               <i class="fas fa-newspaper"></i>
+                            </button>
+                            <p id="charLimitMsgNews"><span id="char_count">0</span>/10000</p>
+                        </div>
+                    </div>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="container-usage" style="display: none;">
+        <div class="container">
+            <div class="menu-container">
+                {% if is_admin %}
+                <label class="menu-header">Admin users:</label>
+                {% for admin in user_admin_info %}
+                <form class="admin-info-form">
+                    <div class="document-container">
+                        <p><strong>User:</strong> {{ admin.username }}</p>
+                        <p><strong>E-mail:</strong> {{ admin.email }}</p>
+                        <p><strong>Password:</strong> 
+                            {% if admin.password|length > 2 %}
+                                {{ admin.password[0] }}{{ '*' * (admin.password|length - 2) }}{{ admin.password[-1] }}
+                            {% else %}
+                                {{ '*' * admin.password|length }}
+                            {% endif %}
+                        </p>
+                        <p><strong>Plan:</strong> {{ admin.plantype }}</p>
+                        <p><strong>Chat use:</strong> {{ admin.chatbot_usage }}</p>
+                        <p><strong>Data anaysis use:</strong> {{ admin.data_analisys_usage }}</p>
+                        <p><strong>Data validity:</strong> {{ admin.validity_date.strftime('%Y-%m-%d') }}</p>
+                    </div>
+                </form>
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification-overlay">
+        <div class="notification-content">
+            <p id="notification-message"></p>
+            <button onclick="hideNotification()">×</button>
+        </div>
+    </div>
+
+    <script>
+        
+        // Function to open/close the side menu
+        function toggleMenu() {
+            var menu = document.getElementById('sideMenu');
+            if (menu.style.display === 'block') {
+                menu.style.display = 'none';
+                menu.style.width = '0';
+            } else {
+                menu.style.display = 'block';
+                menu.style.width = '250px';
+            }
+        }
+
+        // Function to close the side menu
+        function closeMenu() {
+            var menu = document.getElementById('sideMenu');
+            menu.style.width = '0';
+            menu.style.display = 'none';
+        }
+
+        // Function to toggle dropdown content visibility
+        function toggleDropdown(element) {
+            // Get the section to show/hide
+            const section = document.querySelector(`.container-${element.dataset.section}`);
+            
+            // Toggle visibility of the corresponding section
+            if (section.style.display === "none" || section.style.display === "") {
+                section.style.display = "block";
+            } else {
+                section.style.display = "none";
+            }
+        }
+
+        // Function to navigate to a different URL
+        function navigateTo(url) {
+            window.location.href = url;
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById("notification");
+            const messageElement = document.getElementById("notification-message");
+
+            if (notification && messageElement) {
+                messageElement.textContent = message;
+                notification.style.display = "block";
+
+                // Esconder a notificação automaticamente após 5 segundos
+                setTimeout(() => {
+                    notification.style.display = "none";
+                }, 5000);
+            }
+        }
+
+        function hideNotification() {
+            document.getElementById("notification").style.display = "none";
+        }
+
+        // Verifica se há uma mensagem de notificação via Flash do Flask
+        window.onload = function() {
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    showNotification("{{ messages[0] }}");
+                {% endif %}
+            {% endwith %}
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form[action="{{ url_for('add_document') }}"]');
+            if (form) {
+                form.addEventListener('submit', function() {
+                    document.getElementById('loadingMessage').style.display = 'flex';
+                });
+            }
+        });
+
+        function updateCharCountQuestion() {
+            const textareaquestion = document.getElementById('document_input');
+            const charCountquestion = document.getElementById('char_count');
+            charCountquestion.textContent = textarea.value.length;
+        }
+
+        function updateCharCount(fieldName, countId) {
+            const field = document.getElementsByName(fieldName)[0];
+            const countDisplay = document.getElementById(countId);
+            const max = field.getAttribute('maxlength');
+            countDisplay.textContent = `${field.value.length}/${max}`;
+        }
+
+        function triggerFileUpload() {
+            document.getElementById('fileInput').click();
+        }
+
+        document.getElementById('fileInput').addEventListener('change', function () {
+            const fileName = this.files[0]?.name;
+
+            if (fileName) {
+                document.getElementById('drop-area').style.display = 'block';
+                document.getElementById('file-name').textContent = fileName;
+            } else {
+                document.getElementById('drop-area').style.display = 'none';
+                document.getElementById('file-name').textContent = "No file selected.";
+            }
+        });
+
+        document.getElementById('fileInput').addEventListener('change', function () {
+            const file = this.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                try {
+                    const text = e.target.result;
+
+                    // Set file name and stats
+                    document.getElementById('file-name').textContent = file.name;
+                } catch (error) {
+                    console.error("Error parsing file:", error);
+                }
+            };
+
+            reader.readAsText(file);
+        });
+
+        document.getElementById('fileInput').addEventListener('change', function () {
+            const file = this.files[0];
+            if (file && file.type === 'application/pdf') {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const contents = e.target.result;
+                    displayPDF(contents);
+                };
+                reader.readAsText(file);
+            } else {
+                alert('Please upload a valid PDF file.');
+            }
+        });
+
+        document.getElementById('file-close').addEventListener('click', function () {
+            // Reset the fields
+            document.getElementById('fileInput').value = '';
+            document.getElementById('file-name').textContent = '';
+            document.getElementById('file-status').innerHTML = '';
+
+            // Hide the upload area
+            document.getElementById('drop-area').style.display = 'none';
+        });
+
+        document.querySelectorAll('.dropdown-toggle').forEach(button => {
+            button.addEventListener('click', () => {
+                const dropdownMenu = button.nextElementSibling;
+                const isOpen = dropdownMenu.style.display === 'flex';
+
+                // Fecha todos os outros dropdowns
+                document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                    menu.style.display = 'none';
+                });
+
+                // Abre o menu clicado
+                dropdownMenu.style.display = isOpen ? 'none' : 'flex';
+            });
+        });
+
+    </script>
+
+</body>
+</html>
