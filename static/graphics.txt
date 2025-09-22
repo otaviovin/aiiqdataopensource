@@ -1,0 +1,120 @@
+-Histogram with KDE
+
+<svg width="100px" height="100px" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect x="4" y="32" width="4" height="28" fill="#1465bb"/>
+  <rect x="10" y="24" width="4" height="36" fill="#1465bb"/>
+  <rect x="16" y="20" width="4" height="40" fill="#1465bb"/>
+  <rect x="22" y="16" width="4" height="44" fill="#1465bb"/>
+  <rect x="28" y="12" width="4" height="48" fill="#1465bb"/>
+  <rect x="34" y="16" width="4" height="44" fill="#1465bb"/>
+  <rect x="40" y="20" width="4" height="40" fill="#1465bb"/>
+  <rect x="46" y="28" width="4" height="32" fill="#1465bb"/>
+  <rect x="52" y="36" width="4" height="24" fill="#1465bb"/>
+  <path d="M4,48 C16,20 24,12 32,14 C40,16 48,32 60,10" fill="none" stroke="#1465bb" stroke-width="2"/>
+</svg>
+
+-Boxplot
+
+<svg fill="#1465bb" width="100px" height="100px" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <path d="M31,31.36H1c-0.199,0-0.36-0.161-0.36-0.36V1h0.72v29.64H31V31.36z M14,27.36H6v-0.72h3.64v-3.28H6
+    c-0.199,0-0.36-0.161-0.36-0.36V11c0-0.199,0.161-0.36,0.36-0.36h3.64V7.36H6V6.64h8v0.72h-3.64v3.28H14
+    c0.199,0,0.36,0.161,0.36,0.36v12c0,0.199-0.161,0.36-0.36,0.36h-3.64v3.279H14V27.36z M6.36,22.64h7.28v-5.28H6.36V22.64z
+    M6.36,16.64h7.28v-5.28H6.36V16.64z M28,23.36h-8v-0.72h3.64v-3.28H20c-0.199,0-0.36-0.161-0.36-0.36V7
+    c0-0.199,0.161-0.36,0.36-0.36h3.64V3.36H20V2.64h8v0.72h-3.64v3.28H28c0.199,0,0.36,0.161,0.36,0.36v12
+    c0,0.199-0.161,0.36-0.36,0.36h-3.64v3.279H28V23.36z M20.36,18.64h7.279v-5.28H20.36V18.64z M20.36,12.64h7.279V7.36H20.36V12.64z"/>
+</svg>
+
+-Correlation Matrix
+
+<svg width="100px" height="100px" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect x="4" y="4" width="16" height="16" fill="#1465bb"/>
+  <rect x="24" y="4" width="16" height="16" fill="#A5C9EA"/>
+  <rect x="44" y="4" width="16" height="16" fill="#7BAFE1"/>
+
+  <rect x="4" y="24" width="16" height="16" fill="#A5C9EA"/>
+  <rect x="24" y="24" width="16" height="16" fill="#1465bb"/>
+  <rect x="44" y="24" width="16" height="16" fill="#A5C9EA"/>
+
+  <rect x="4" y="44" width="16" height="16" fill="#7BAFE1"/>
+  <rect x="24" y="44" width="16" height="16" fill="#A5C9EA"/>
+  <rect x="44" y="44" width="16" height="16" fill="#1465bb"/>
+</svg>
+
+-ScatterPlot
+
+<svg width="100px" height="100px" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+  <polygon fill="#1465bb" points="9,39 9,6 7,6 7,41 42,41 42,39"/>
+  <g fill="#1465bb">
+    <circle cx="39" cy="11" r="3"/>
+    <circle cx="31" cy="13" r="3"/>
+    <circle cx="37" cy="19" r="3"/>
+    <circle cx="34" cy="26" r="3"/>
+    <circle cx="28" cy="20" r="3"/>
+    <circle cx="26" cy="28" r="3"/>
+    <circle cx="20" cy="23" r="3"/>
+    <circle cx="21" cy="33" r="3"/>
+    <circle cx="14" cy="30" r="3"/>
+  </g>
+</svg>
+
+-Line Chart
+
+<svg width="100px" height="100px" viewBox="0 0 489.2 489.2" xmlns="http://www.w3.org/2000/svg">
+  <g fill="#1465bb">
+    <polygon points="61.3,427.9 61.3,0 0,0 0,489.2 489.2,489.2 489.2,427.9"/>
+    <path d="M477.6,68.3c-2.7-4.7-8.2-6.2-12.8-3.5l-46.6,26c-6.6-9.3-17.5-15.1-29.9-15.1c-20.6,0-36.9,16.7-36.9,36.9
+        c0,1.2,0,2.7,0.4,3.9l-59,19.4c-6.6-9.3-17.5-15.1-29.9-15.1c-20.6,0-36.9,16.7-36.9,36.9c0,12,5.8,22.9,14.8,29.5l-22.2,70.2
+        c-20.2,0.4-36.1,16.7-36.1,36.9c0,5.4,1.2,10.5,3.5,15.1l-94.9,71.7c-4,3.1-4.9,8.8-2,12.9l0,0c3,4.2,9,5.2,13.2,2l95.7-71.9
+        c6.2,4.7,13.6,7,21.7,7c20.6,0,36.9-16.7,36.9-36.9c0-14-7.8-26.4-19.4-32.6l21.4-67.6c1.6,0.4,3.1,0.4,4.7,0.4
+        c20.6,0,36.9-16.7,36.9-36.9c0-1.6,0-3.1-0.4-4.7l58.6-19c6.6,9.3,17.9,15.5,30.3,15.5c20.6,0,36.9-16.7,36.9-36.9
+        c0-1.6,0-2.7-0.4-3.9l48.9-27.6C478.7,78.4,480.3,73,477.6,68.3z"/>
+  </g>
+</svg>
+
+-Pie Chart
+
+<svg width="100px" height="100px" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <path fill="#1465bb" d="M216.3,45.4c-106,15.4-184.4,105.4-184.4,213.8c0,119.2,97,216.2,216.2,216.2c52,0,101.7-18.6,141-52.5
+    l-163.5-163.5c-6-6-9.3-14-9.3-22.5V45.4z"/>
+  <path fill="#1465bb" d="M286.3,15.8v194.4c0,2.8,1.1,5.4,3.1,7.4l162.8,162.8c29-40.5,44.4-88.2,44.4-137.8
+    C496.6,108.6,404.3,7.2,286.3,15.8z"/>
+</svg>
+
+-Olap Slice Dice
+
+<svg width="100px" height="100px" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <g fill="#1465bb">
+    <rect x="64" y="64" width="160" height="160" />
+    <rect x="288" y="64" width="160" height="160" />
+    <rect x="64" y="288" width="160" height="160" />
+    <rect x="288" y="288" width="160" height="160" />
+    <line x1="0" y1="256" x2="512" y2="256" stroke="#1465bb" stroke-width="20"/>
+    <line x1="256" y1="0" x2="256" y2="512" stroke="#1465bb" stroke-width="20"/>
+  </g>
+</svg>
+
+-Olap Drilldown
+
+<svg width="100px" height="100px" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <g fill="#1465bb">
+    <rect x="96" y="96" width="96" height="96" />
+    <path d="M208 96 L256 144 L208 192 Z" />
+    <rect x="256" y="144" width="96" height="96" />
+    <path d="M368 144 L416 192 L368 240 Z" />
+    <rect x="416" y="192" width="96" height="96" />
+  </g>
+</svg>
+
+-Olap Pivot
+
+<svg width="100px" height="100px" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <g fill="#1465bb">
+    <rect x="80" y="80" width="120" height="120" />
+    <rect x="312" y="80" width="120" height="120" />
+    <rect x="80" y="312" width="120" height="120" />
+    <path d="M312 312 L432 432" stroke="#1465bb" stroke-width="24" />
+    <path d="M432 312 L312 432" stroke="#1465bb" stroke-width="24" />
+    <circle cx="372" cy="372" r="20" fill="#1465bb" />
+  </g>
+</svg>
+
