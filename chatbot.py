@@ -42,7 +42,7 @@ if not MONGODB_URI:
 # Initialize MongoDB client with TLS encryption and certificate validation disabled
 client = MongoClient(MONGODB_URI, tls=True, tlsAllowInvalidCertificates=True)
 
-def initialize_qa_chain(business_id, top_3_matches):
+def initialize_qa_chain(business_id, top_3_matches, plan_type="free"):
     """
     Initializes a question and answer (QA) chain based on the top 3 best matches from the info data.
     It sets up the necessary embeddings and model for further question answering.
@@ -62,6 +62,27 @@ def initialize_qa_chain(business_id, top_3_matches):
     
     if not info_data:
         return None  # If no info data is available, return None
+    
+    # Select max_tokens depending on plan type
+    plan_configs = {
+        "free": {
+            "max_tokens": 500,
+            "model": "gpt-3.5-turbo"
+        },
+        "standard": {
+            "max_tokens": 750,
+            "model": "gpt-3.5-turbo"
+        },
+        "professional": {
+            "max_tokens": 1000,
+            "model": "gpt-3.5-turbo"
+        }
+    }
+
+    # Get settings from plan_type, or fallback to "free"
+    config = plan_configs.get(plan_type.lower(), plan_configs["free"])
+    max_tokens = config["max_tokens"]
+    model_name = config["model"]
 
     # Initialize OpenAI embeddings using the API key from environment variables
     openai_api_key = os.getenv("OPENAI_API_KEY")
@@ -76,9 +97,9 @@ def initialize_qa_chain(business_id, top_3_matches):
 
     # Initialize the ChatOpenAI model using GPT-3.5-turbo for generating responses
     llm = ChatOpenAI(
-        model="gpt-3.5-turbo",
+        model=model_name,
         openai_api_key=openai_api_key,
-        max_tokens=1000
+        max_tokens=max_tokens
         )
 
     # Create a QA chain using the retrieval-augmented generation method
@@ -128,38 +149,20 @@ def ask_question(question, business_id):
 
         client = pymongo.MongoClient(mongo_uri)  # Connect to MongoDB using the URI
         db = client["businessdata"]  # Access the 'businessdata' database where collections are stored
-
-        # Log the database being searched
-        print(f"Searching in the database: businessdata")
-        
-        # List all collections in the 'businessdata' database
-        print(f"Collections in businessdata database: {db.list_collection_names()}")
-
-        # Access the specific collection for the given business ID
-        info_collection = db[f"{business_id}info"]
-        print(f"Using collection: {business_id}info")
-
-        # Clean the incoming question to ensure consistent format
-        cleaned_question = clean_text(question)
-        print(f"Received question (cleaned): {cleaned_question}")
-
+        info_collection = db[f"{business_id}info"] # Access the specific collection for the given business ID
+        cleaned_question = clean_text(question) # Clean the incoming question to ensure consistent format
         # Search for the question in the database using regex (case-insensitive match)
         question_data = info_collection.find_one({
             "question": {"$regex": cleaned_question, "$options": "i"}
         })
 
         if question_data:
-            print(f"Direct match found in the database: {question_data['question']}")
-            # If a direct match is found, return the associated answer
-            return {"answer": question_data.get("answer", "Answer not found.")}
+            return {"answer": question_data.get("answer", "Answer not found.")} # If a direct match is found, return the associated answer
 
-        # If no direct match, perform fuzzy matching to find the closest matches
-        print(f"No direct match found. Performing fuzzy match...")
+        all_questions = list(info_collection.find({}, {"_id": 0})) # Retrieve all questions from the collection
 
-        # Retrieve all questions from the collection
-        all_questions = list(info_collection.find({}, {"_id": 0}))
         if not all_questions:
-            print("No questions found in the database.")
+            return {"answer": question_data.get("answer", "No questions found in the database.")}
         
         matches = []
 
@@ -167,8 +170,6 @@ def ask_question(question, business_id):
         for doc in all_questions:
             question_from_db = clean_text(doc["question"])  # Clean the question from the database
             score = fuzz.ratio(cleaned_question, question_from_db)  # Calculate the fuzzy match score
-            print(f"Match score for '{doc['question']}': {score}")
-            print(f"Full document: {doc}")  # Print the full document for inspection
 
             matches.append({
                 "question": doc.get("question", "Unknown question"),
@@ -177,32 +178,25 @@ def ask_question(question, business_id):
                 "score": score
             })
 
-            print(f"All fuzzy matches: {matches}")
+        matches.sort(key=lambda x: x["score"], reverse=True) # Sort the matches by score in descending order to get the most relevant ones
+        top_3_matches = [(match["question"], match["answer"], match["procedure_path"]) for match in matches[:3]] # Select the top 3 matches
 
-        # Sort the matches by score in descending order to get the most relevant ones
-        matches.sort(key=lambda x: x["score"], reverse=True)
-        
-        # Select the top 3 matches
-        top_3_matches = [(match["question"], match["answer"], match["procedure_path"]) for match in matches[:3]]
-
-        print(f"Top 3 best question-answer combinations: {top_3_matches}")
+        # === Fetch the user plan type from MongoDB ===
+        business_collection = db["{}".format(business_id)]
+        user_data = business_collection.find_one({"username": "businessidadmin"})
+        plan_type = user_data.get("plantype", "free") if user_data else "free"
 
         # Call the QA chain with the top 3 matches
-        qa_chain = initialize_qa_chain(business_id, top_3_matches)
+        qa_chain = initialize_qa_chain(business_id, top_3_matches, plan_type=plan_type)
         if qa_chain:
             # Invoke the QA chain with the question and get the response
             response = qa_chain.invoke({"query": question})
             answer = response["result"]
-            print("Response (response) generated by the chatbot:", response)
-            print("Response (answer) generated by the chatbot:", answer)
             return {"answer": answer}
 
         # If no match found after fuzzy search, return a default response
-        print(f"No match found after fuzzy search.")
         return {"answer": "Sorry, I couldn't find an answer to your question."}
 
     except Exception as e:
         # Log error details if something goes wrong
-        print(f"Error processing the question: {e}")
-        print("Error details:", traceback.format_exc())  # Print full traceback for debugging
         return {"answer": "Sorry, there was an error processing your question."}
