@@ -43,7 +43,17 @@ from itertools import combinations  # Used to generate all possible combinations
 import itertools  # General import to access other itertools functions if needed.
 
 SERVICE_ACCOUNT_INFO = {
-<your here>
+  "type": "service_account",
+  "project_id": "aiiqdata-1749032185255",
+  "private_key_id": "b4c54a216295e8a6d044f8e3ee559a0f49c4c53a",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCbQgeRmM0vHPxt\nmJyaoqcMBh2NyThDJGx9ZlEq6fjiQTUKEAUB9tsiXHwx1aCQtRqKFxz+D6c2Epw1\ngy0DcNr/nrUDmligaY0twnuKA/E8wlR+gDR7CV/C0rQuv1HR//39vBWQsqerIvaz\ntXKSoZVHS4dAg8eh0BPMhYgEhMBAqRT22V2bOiwEX7kzST06ZIrAKa2dIz3Wy7P7\nDTCjcS1/2KbP5Yw1XW9ydU05zDO5Ix50hK8dFpRAwO/ltn4COgK2uOeXhiJf/ito\nqhWgMO8zHbhGzGfQJ6sPGgBYx6pG1tNLgwtk08EptNy+bBHU5SBfUb0ys9U1xftD\nn8k+n539AgMBAAECggEAEkhoxsL1Kp6htTA7BNSxki9oLImtB+8SnYO+fCy4Q8CF\nA+3WASC2Nmoor9+lvFSvTuKg5eQm/y2a2oxbcSPJjj98tnNnC2DSoLhdvudu8YY6\n1/i19WUpszIHyNd7xZx9JvOOoI8BQpxn68qqtsyzXQVuZHEAQbRUmImC9nFBiHuR\nxshF4kjnGqaMyYiM1Pp5iQDLnnEw427rSdb3zqf+kU6v/TVw3mZf28v5QkKic1XQ\nQqqatsMEZfNSwpg2doFUBKIcZJ5IpPh3wMvbfYGy7FDXvkZahNGbk2LZ8HvpQvmq\nSDnlyNVRnpdjdgLqygXldzQOIl7Hl0AYFJRv/RSSCwKBgQDLyc81aY9M7lvmRSC/\n9GRx6eDdUrUpkzxLxCCwopqAs3wnJ6gnLpBnZ48MReImWIymtjCFSE/gN1X1We4j\nyWL1miCBXY/R0v0fwuGvK08lS1mgY+6bLanPJ0WeR0fp1nqotZ9QiMJFBW6aiJWc\nt4XDbPCSFReGbFoosTy/H6F78wKBgQDDCS4GvSCAMpID2vUUBQ6opviZ6j1F6tVK\nszVbJVErXsVxad0HfRT4tjOwv8W9PH0SZ9bDVgmOCkGj43jWuThbz+HbP1R++3YE\nUxU7cBUbbGjSAb7oNgRfVKrTPOihpJ+6VlPITY+JpTpU8FkGzitzRI+Y3Ze7PVUW\n1S1EOFmqTwKBgQCQ7Nk2Q/bMICss7HZo7JXOSSRIYXxCr9nOjBEvbMPxyTL+6X31\nN3EsiII7mStGV+zW1nRVJOLhMpkn3ie0PZDp1w1M0svnzWOEBeTX3TXw8NAxd0AG\nDYhYsLYa5NhonMYoWtmMvWVjDoTk00OK6xzuqPfA+8z6JO5NSBZKWWVPLwKBgCKK\nwqsQ3eu2iSPDqLol9yWphMgFs1ppr+LuAFonLswGmeNvQ2UrIwa1hkwcetH8H46d\n82xfFYwhhuSWyfUFktS36aFiAv4GXS2A5XbEcAiOV7Yx9vS7dGTJ4wNMe0r9lAh1\nd5s3GV/gcodOlgXdh9Z/YwtI27GeuC42DTFS5ZaDAoGBAKdpPPMrlW4B9J/VSV/Z\n0JdWrE7jJalun2WUUU3G1KvTZXZd4MQIqls1LLZW6QePhgdoBrJoogWffloru/77\njnV00rjeoHVN2B8wIGZRg6zACFNkmZf8GbTcmldnOeLWdqlaAEtW5rSLn9zU4gwd\nRigd7XP6qCw4+xUJfWUqzflD\n-----END PRIVATE KEY-----\n",
+  "client_email": "aiiqdata-service@aiiqdata-1749032185255.iam.gserviceaccount.com",
+  "client_id": "113607119034022445441",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/aiiqdata-service%40aiiqdata-1749032185255.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
 }
 
 # === Google Sheets Data Loader ===
@@ -75,8 +85,8 @@ def load_google_sheet_visual_data(sheet_url):
         # Extrai o ID da planilha
         match = re.search(r"/d/([a-zA-Z0-9-_]+)", sheet_url)
         if not match:
-            flash("ID da planilha não encontrado na URL.", "danger")
-            raise ValueError("ID da planilha não encontrado na URL.")
+            flash("Spreadsheet ID not found in the URL.", "danger")
+            raise ValueError("Spreadsheet ID not found in the URL.")
 
         sheet_id = match.group(1)
         spreadsheet = client.open_by_key(sheet_id)
@@ -93,7 +103,7 @@ def load_google_sheet_visual_data(sheet_url):
         return pd.DataFrame(data), spreadsheet_info
     
     except Exception as e:
-        flash("Erro ao carregar a planilha:", "danger")
+        flash("Error loading the spreadsheet:", "danger")
         raise
 
 # === Plot Wrapper ===
@@ -121,7 +131,6 @@ def plot_to_base64(plot_func):
         return base64.b64encode(img.getvalue()).decode("utf-8")
     
     except Exception as e:
-        print(f"Plot error: {e}")
         return None
 
 # === Core Analysis Function for Google Sheets ===
@@ -202,7 +211,6 @@ def analyze_dataframe_googlesheets(df):
                     })
 
             except Exception as e:
-                print(f"Error generating Scatter Plot for {x_col} e {y_col}: {e}")
                 continue
 
     # === Line Charts Individual ===
@@ -225,7 +233,6 @@ def analyze_dataframe_googlesheets(df):
                 })
 
         except Exception as e:
-            print(f"Error generating Line Chart for {num_col}: {e}")
             continue
 
     # === Line Chart All Numeric Columns ===
@@ -249,12 +256,13 @@ def analyze_dataframe_googlesheets(df):
 
     except Exception as e:
         print(f"Error generating combined Line Chart: {e}")
+        flash(f"Error generating combined Line Chart.", "danger")
     
     # === Pie Charts ===
     for cat_col in cat_cols:
         for num_col in num_cols:
             try:
-                # Agrupa a coluna numérica pela categórica (soma por categoria)
+                # Groups the numeric column by the categorical one (sum by category)
                 grouped_values = df.groupby(cat_col)[num_col].sum().sort_values(ascending=False)
 
                 def plot():
@@ -262,19 +270,18 @@ def analyze_dataframe_googlesheets(df):
                         autopct="%1.1f%%",
                         startangle=90,
                         figsize=(6, 6),
-                        ylabel=''  # Remove y-label padrão
+                        ylabel='' # Removes default y-label
                     )
-                    plt.title(f'Pie Chart - {num_col} por {cat_col}')
+                    plt.title(f'Pie Chart - {num_col} by {cat_col}')
 
                 img = plot_to_base64(plot)
                 if img:
                     results["images"].append({
-                        "title": f"Pie Chart - {num_col} por {cat_col}",
+                        "title": f"Pie Chart - {num_col} by {cat_col}",
                         "data": img
                     })
 
             except Exception as e:
-                print(f"Error generating Pie Chart for {cat_col} e {num_col}: {e}")
                 continue
 
     # === Pie Charts by Value ===
@@ -299,7 +306,6 @@ def analyze_dataframe_googlesheets(df):
                 })
 
         except Exception as e:
-            print(f"Error generating pie chart for value_counts de {num_col}: {e}")
             continue
     
     # === OLAP Slice & Dice ===
@@ -324,7 +330,6 @@ def analyze_dataframe_googlesheets(df):
                         })
 
             except Exception as e:
-                print(f"Error generating OLAP Slice & Dice for {cat_col} e {num_col}: {e}")
                 continue
     
     # === OLAP Drill Down (Date Analysis) ===
@@ -336,6 +341,7 @@ def analyze_dataframe_googlesheets(df):
                 df[candidate_col] = parsed
                 date_col = candidate_col
                 break
+            
         except Exception:
             continue
 
@@ -351,7 +357,7 @@ def analyze_dataframe_googlesheets(df):
                         def plot():
                             summary.plot(marker='o', figsize=(8, 5))
                             plt.title(f"OLAP Drill Down - {col_name} (by {date_col})")
-                            plt.xlabel("Mês")
+                            plt.xlabel("Month")
                             plt.ylabel(f"Sum of {col_name}")
                             plt.grid(True)
                             plt.xticks(rotation=45)
@@ -366,10 +372,11 @@ def analyze_dataframe_googlesheets(df):
                         })
 
                 except Exception as e:
-                    print(f"Error generating OLAP Drill Down for {col}: {e}")
                     continue
+
         except Exception as e:
             print(f"Error in OLAP Drill Down with colunm {date_col}: {e}")
+            flash(f"Error in OLAP Drill Down with colunm", "danger")
 
     # === Pivot Tables ===
     if len(cat_cols) >= 1 and len(num_cols) >= 1:
@@ -394,6 +401,7 @@ def analyze_dataframe_googlesheets(df):
                     results["images"].append({"title": f"OLAP Pivot Table - {num_col} by {', '.join(cat_combo)}", "data": img})
             except Exception as e:
                 print(f"Error generating OLAP Pivot Table for {num_col} with {cat_combo}: {e}")
+                flash(f"Error generating OLAP Pivot Table for {num_col} with {cat_combo}", "danger")
 
     # === Additional statistics per column ===
     statistics = {}

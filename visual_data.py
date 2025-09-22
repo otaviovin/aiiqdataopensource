@@ -45,7 +45,7 @@ from dotenv import load_dotenv
 
 # datetime provides classes for manipulating dates and times.
 # Often used for logging, scheduling, or setting expiration policies.
-import datetime
+from datetime import datetime, timedelta, timezone
 
 # === Itertools ===
 # The 'itertools' module provides a set of fast, memory-efficient tools 
@@ -108,7 +108,7 @@ def save_dataframe_to_mongo(df, collection_name="uploaded_data"):
         csv_data = {
             'business_id': business_id,
             'csv_file': records,
-            'created_at': datetime.datetime.utcnow()
+            'created_at': datetime.now(timezone.utc)
         }
 
         insert_result = csv_collection.insert_one(csv_data)
@@ -175,7 +175,7 @@ def save_analysis_to_mongo(business_id, charts, explanations, explanationsai, su
             'explanations': explanations,
             'explanationsai': explanationsai,
             'summary': summary,
-            'created_at': datetime.datetime.utcnow()
+            'created_at': datetime.now(timezone.utc)
         }
 
         insert_result = csv_collection.insert_one(analysis_doc)
@@ -335,7 +335,7 @@ def analyze_dataframe(df):
     for cat_col in cat_cols:
         for num_col in num_cols:
             try:
-                # Agrupa a coluna numérica pela categórica (soma por categoria)
+                # Groups the numerical column by the categorical one (sum per category)
                 grouped_values = df.groupby(cat_col)[num_col].sum().sort_values(ascending=False)
 
                 def plot():
@@ -343,20 +343,20 @@ def analyze_dataframe(df):
                         autopct="%1.1f%%",
                         startangle=90,
                         figsize=(6, 6),
-                        ylabel=''  # Remove y-label padrão
+                        ylabel=''  # Removes default y-label
                     )
-                    plt.title(f'Pie Chart - {num_col} por {cat_col}')
+                    plt.title(f'Pie Chart - {num_col} by {cat_col}')
 
                 img = plot_to_base64(plot)
                 if img:
                     results["images"].append({
-                        "title": f"Pie Chart - {num_col} por {cat_col}",
+                        "title": f"Pie Chart - {num_col} by {cat_col}",
                         "data": img
                     })
 
             except Exception as e:
-                print(f"Error generating Pie Chart for {cat_col} e {num_col}: {e}")
-                flash(f"Error generating Pie Chart for {cat_col} e {num_col}: {e}", "danger")
+                print(f"Error generating Pie Chart for {cat_col} and {num_col}: {e}")
+                flash(f"Error generating Pie Chart for {cat_col} and {num_col}: {e}", "danger")
                 continue
 
     # === Pie Charts by Value ===
@@ -381,8 +381,8 @@ def analyze_dataframe(df):
                 })
 
         except Exception as e:
-            print(f"Error generating pie chart for value_counts de {num_col}: {e}")
-            flash(f"Error generating pie chart for value_counts de {num_col}: {e}", "danger")
+            print(f"Error generating pie chart for value_counts of {num_col}: {e}")
+            flash(f"Error generating pie chart for value_counts of {num_col}: {e}", "danger")
             continue
         
     # === OLAP Slice & Dice ===
@@ -391,10 +391,10 @@ def analyze_dataframe(df):
             try:
                 grouped = df.groupby(cat_col)[num_col].sum().sort_values(ascending=False)
 
-                if grouped.shape[0] > 1:  # Só plota se houver mais de uma categoria
+                if grouped.shape[0] > 1:  # Only plots if there is more than one category
                     def plot():
                         grouped.head(10).plot(kind='bar', figsize=(8, 5))
-                        plt.title(f'OLAP Slice & Dice - Soma de {num_col} por {cat_col}')
+                        plt.title(f'OLAP Slice & Dice - Soma de {num_col} by {cat_col}')
                         plt.xlabel(cat_col)
                         plt.ylabel(f'Soma de {num_col}')
                         plt.xticks(rotation=45)
@@ -402,13 +402,13 @@ def analyze_dataframe(df):
                     img = plot_to_base64(plot)
                     if img:
                         results["images"].append({
-                            "title": f"OLAP Slice & Dice - {num_col} por {cat_col}",
+                            "title": f"OLAP Slice & Dice - {num_col} by {cat_col}",
                             "data": img
                         })
 
             except Exception as e:
-                print(f"Error generating OLAP Slice & Dice for {cat_col} e {num_col}: {e}")
-                flash(f"Error generating OLAP Slice & Dice for {cat_col} e {num_col}: {e}", "danger")
+                print(f"Error generating OLAP Slice & Dice for {cat_col} and {num_col}: {e}")
+                flash(f"Error generating OLAP Slice & Dice for {cat_col} and {num_col}: {e}", "danger")
                 continue
     
     # === OLAP Drill Down (monthly analysis) ===
@@ -435,8 +435,8 @@ def analyze_dataframe(df):
                         def plot():
                             summary.plot(marker='o', figsize=(8, 5))
                             plt.title(f"OLAP Drill Down - {col_name} (por {date_col})")
-                            plt.xlabel("Mês")
-                            plt.ylabel(f"Soma de {col_name}")
+                            plt.xlabel("Month")
+                            plt.ylabel(f"Sum of {col_name}")
                             plt.grid(True)
                             plt.xticks(rotation=45)
                         return plot
@@ -445,7 +445,7 @@ def analyze_dataframe(df):
                     img = plot_to_base64(plot_func)
                     if img:
                         results["images"].append({
-                            "title": f"OLAP Drill Down - {col} por {date_col}",
+                            "title": f"OLAP Drill Down - {col} by {date_col}",
                             "data": img
                         })
 
@@ -453,6 +453,7 @@ def analyze_dataframe(df):
                     print(f"Error generating OLAP Drill Down for {col}: {e}")
                     flash(f"Error generating OLAP Drill Down for {col}: {e}", "danger")
                     continue
+
         except Exception as e:
             print(f"General error in Drill Down with column {date_col}: {e}")
             flash(f"General error in Drill Down with column {date_col}: {e}", "danger")
@@ -477,7 +478,8 @@ def analyze_dataframe(df):
                     plt.title(f"OLAP Pivot Table - {num_col} por {', '.join(cat_combo)}")
                 img = plot_to_base64(plot)
                 if img:
-                    results["images"].append({"title": f"OLAP Pivot Table - {num_col} por {', '.join(cat_combo)}", "data": img})
+                    results["images"].append({"title": f"OLAP Pivot Table - {num_col} by {', '.join(cat_combo)}", "data": img})
+                    
             except Exception as e:
                 print(f"Error generating OLAP Pivot Table for {num_col} with {cat_combo}: {e}")
                 flash(f"Error generating OLAP Pivot Table for {num_col} with {cat_combo}: {e}", "danger")
