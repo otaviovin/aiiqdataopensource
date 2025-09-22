@@ -31,7 +31,8 @@ import base64  # Used to encode image data for embedding in HTML
 from dotenv import load_dotenv  # To securely manage configuration and credentials
 
 # Datetime - Native Python module for handling date and time operations
-import datetime  # Useful for timestamping and scheduling tasks
+# Useful for timestamping and scheduling tasks
+from datetime import datetime, timedelta, timezone  
 
 # GSpread - Python API for interacting with Google Sheets
 import gspread  # Allows access to and manipulation of Google Sheets via API
@@ -81,7 +82,17 @@ app.secret_key = os.getenv("SECRET_KEY", "supersecretkey")
 UPLOAD_FOLDER = 'uploads'
 
 SERVICE_ACCOUNT_INFO = {
-  <your code>
+  "type": "service_account",
+  "project_id": "aiiqdata-1749032185255",
+  "private_key_id": "b4c54a216295e8a6d044f8e3ee559a0f49c4c53a",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCbQgeRmM0vHPxt\nmJyaoqcMBh2NyThDJGx9ZlEq6fjiQTUKEAUB9tsiXHwx1aCQtRqKFxz+D6c2Epw1\ngy0DcNr/nrUDmligaY0twnuKA/E8wlR+gDR7CV/C0rQuv1HR//39vBWQsqerIvaz\ntXKSoZVHS4dAg8eh0BPMhYgEhMBAqRT22V2bOiwEX7kzST06ZIrAKa2dIz3Wy7P7\nDTCjcS1/2KbP5Yw1XW9ydU05zDO5Ix50hK8dFpRAwO/ltn4COgK2uOeXhiJf/ito\nqhWgMO8zHbhGzGfQJ6sPGgBYx6pG1tNLgwtk08EptNy+bBHU5SBfUb0ys9U1xftD\nn8k+n539AgMBAAECggEAEkhoxsL1Kp6htTA7BNSxki9oLImtB+8SnYO+fCy4Q8CF\nA+3WASC2Nmoor9+lvFSvTuKg5eQm/y2a2oxbcSPJjj98tnNnC2DSoLhdvudu8YY6\n1/i19WUpszIHyNd7xZx9JvOOoI8BQpxn68qqtsyzXQVuZHEAQbRUmImC9nFBiHuR\nxshF4kjnGqaMyYiM1Pp5iQDLnnEw427rSdb3zqf+kU6v/TVw3mZf28v5QkKic1XQ\nQqqatsMEZfNSwpg2doFUBKIcZJ5IpPh3wMvbfYGy7FDXvkZahNGbk2LZ8HvpQvmq\nSDnlyNVRnpdjdgLqygXldzQOIl7Hl0AYFJRv/RSSCwKBgQDLyc81aY9M7lvmRSC/\n9GRx6eDdUrUpkzxLxCCwopqAs3wnJ6gnLpBnZ48MReImWIymtjCFSE/gN1X1We4j\nyWL1miCBXY/R0v0fwuGvK08lS1mgY+6bLanPJ0WeR0fp1nqotZ9QiMJFBW6aiJWc\nt4XDbPCSFReGbFoosTy/H6F78wKBgQDDCS4GvSCAMpID2vUUBQ6opviZ6j1F6tVK\nszVbJVErXsVxad0HfRT4tjOwv8W9PH0SZ9bDVgmOCkGj43jWuThbz+HbP1R++3YE\nUxU7cBUbbGjSAb7oNgRfVKrTPOihpJ+6VlPITY+JpTpU8FkGzitzRI+Y3Ze7PVUW\n1S1EOFmqTwKBgQCQ7Nk2Q/bMICss7HZo7JXOSSRIYXxCr9nOjBEvbMPxyTL+6X31\nN3EsiII7mStGV+zW1nRVJOLhMpkn3ie0PZDp1w1M0svnzWOEBeTX3TXw8NAxd0AG\nDYhYsLYa5NhonMYoWtmMvWVjDoTk00OK6xzuqPfA+8z6JO5NSBZKWWVPLwKBgCKK\nwqsQ3eu2iSPDqLol9yWphMgFs1ppr+LuAFonLswGmeNvQ2UrIwa1hkwcetH8H46d\n82xfFYwhhuSWyfUFktS36aFiAv4GXS2A5XbEcAiOV7Yx9vS7dGTJ4wNMe0r9lAh1\nd5s3GV/gcodOlgXdh9Z/YwtI27GeuC42DTFS5ZaDAoGBAKdpPPMrlW4B9J/VSV/Z\n0JdWrE7jJalun2WUUU3G1KvTZXZd4MQIqls1LLZW6QePhgdoBrJoogWffloru/77\njnV00rjeoHVN2B8wIGZRg6zACFNkmZf8GbTcmldnOeLWdqlaAEtW5rSLn9zU4gwd\nRigd7XP6qCw4+xUJfWUqzflD\n-----END PRIVATE KEY-----\n",
+  "client_email": "aiiqdata-service@aiiqdata-1749032185255.iam.gserviceaccount.com",
+  "client_id": "113607119034022445441",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/aiiqdata-service%40aiiqdata-1749032185255.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
 }
 
 def load_google_sheet_data_analysis(sheet_url, business_id):
@@ -94,8 +105,8 @@ def load_google_sheet_data_analysis(sheet_url, business_id):
         match = re.search(r"/d/([a-zA-Z0-9-_]+)", sheet_url)
 
         if not match:
-            flash("ID da planilha não encontrado na URL.", "danger")
-            raise ValueError("ID da planilha não encontrado na URL.")
+            flash("Spreadsheet ID not found in the URL.", "danger")
+            raise ValueError("Spreadsheet ID not found in the URL.")
 
         sheet_id = match.group(1)
         spreadsheet = client.open_by_key(sheet_id)
@@ -115,8 +126,8 @@ def load_google_sheet_data_analysis(sheet_url, business_id):
         return df, spreadsheet_info
     
     except Exception as e:
-        print("Erro ao carregar a planilha:")
-        flash("Erro ao carregar a planilha:", "danger")
+        print("Error loading the spreadsheet:")
+        flash("Error loading the spreadsheet:", "danger")
         raise
 
 def save_dataframe_to_mongo(df, collection_name="uploaded_data"):
@@ -145,7 +156,7 @@ def save_dataframe_to_mongo(df, collection_name="uploaded_data"):
         csv_data = {
             'business_id': business_id,
             'csv_file': records,
-            'created_at': datetime.datetime.utcnow()
+            'created_at': datetime.now(timezone.utc)
         }
 
         insert_result = csv_collection.insert_one(csv_data)
@@ -206,7 +217,7 @@ def save_analysis_to_mongo(business_id, charts, explanations, explanationsai, su
             'explanations': explanations,
             'explanationsai': explanationsai,
             'summary': summary,
-            'created_at': datetime.datetime.utcnow()
+            'created_at': datetime.now(timezone.utc)
         }
 
         insert_result = csv_collection.insert_one(analysis_doc)

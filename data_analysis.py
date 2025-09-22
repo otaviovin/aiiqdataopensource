@@ -41,7 +41,7 @@ from dotenv import load_dotenv
 
 # datetime - Module for working with dates and times
 # Useful for logging, session expiration, and time-based calculations
-import datetime
+from datetime import datetime, timedelta, timezone
 
 # LangChain - Integration with OpenAI's ChatGPT for conversational AI
 # Used to interact with ChatGPT models within a pipeline
@@ -91,8 +91,10 @@ def save_dataframe_to_mongo(df, collection_name="uploaded_data"):
     - df (pd.DataFrame): DataFrame to be saved
     - collection_name (str): Optional name of the MongoDB collection
     """
-
     try:
+        if not isinstance(df, pd.DataFrame):
+            raise TypeError(f"save_dataframe_to_mongo expected DataFrame, got {type(df)}")
+    
         business_id = session.get('business_id') or request.form.get('business_id')
 
         if not business_id:
@@ -103,14 +105,16 @@ def save_dataframe_to_mongo(df, collection_name="uploaded_data"):
         # Filter to max 200 rows and 5 columns
         df_filtered = df.iloc[:200, :5]
         records = df_filtered.to_dict(orient='records')
+
         csv_collection_name = f"{business_id}csv"
         csv_collection = db_business[csv_collection_name]
-        delete_result = csv_collection.delete_many({})
+        
+        csv_collection.delete_many({})
 
         csv_data = {
             'business_id': business_id,
             'csv_file': records,
-            'created_at': datetime.datetime.utcnow()
+            'created_at': datetime.now(timezone.utc)
         }
 
         insert_result = csv_collection.insert_one(csv_data)
@@ -169,7 +173,7 @@ def save_analysis_to_mongo(business_id, charts, explanations, explanationsai, su
             'explanations': explanations,
             'explanationsai': explanationsai,
             'summary': summary,
-            'created_at': datetime.datetime.utcnow()
+            'created_at': datetime.now(timezone.utc)
         }
 
         insert_result = csv_collection.insert_one(analysis_doc)
