@@ -243,26 +243,58 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly",
 
 def login_required(f):
     """
-    Decorator that ensures a user is logged in before accessing a route.
-    
-    It checks if 'business_id' and 'username' are present in the session.
-    If not, the user is redirected to the login page with a warning message.
-    
-    Args:
-        f (function): The route function to be decorated.
-    
-    Returns:
-        function: The wrapped function that includes login verification.
+    Decorator to ensure the user is authenticated and the session is secure before accessing a route.
+
+    Verifies:
+    - User is logged in (session contains 'business_id' and 'username')
+    - Session contains a valid ID
+    - User-Agent hasn't changed
+    - IP hasn't changed
+    - MongoDB connection is alive
+
+    If any check fails, the session is cleared and user is redirected to login.
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # Check if 'business_id' and 'username' exist in the session
+        # Check for login credentials
         if not session.get('business_id') or not session.get('username'):
-            # Flash a warning message and redirect to the login page
             print("You need to be logged in to access this page.")
             flash("You need to be logged in to access this page.", 'warning')
             return redirect(url_for('login'))
-        # If logged in, proceed with the original function
+
+        # Check MongoDB connection
+        try:
+            client.server_info()  # Verifies MongoDB connection
+        except Exception as e:
+            print(f"❌ Error connecting to MongoDB: {str(e)}")
+            flash("Internal server error. Please try again later.", 'danger')
+            return redirect(url_for('login'))
+
+        # Check session integrity (User-Agent & IP Address)
+        if not session.get('id'):
+            session['id'] = os.urandom(16).hex()  # Secure random ID on login
+
+        current_user_agent = request.headers.get('User-Agent')
+        current_ip = request.remote_addr
+
+        # Store or validate User-Agent
+        if not session.get('user_agent'):
+            session['user_agent'] = current_user_agent
+        elif session['user_agent'] != current_user_agent:
+            session.clear()
+            print("Session invalidated: User-Agent changed.")
+            flash("Session invalidated: User-Agent changed.", 'danger')
+            abort(403, description="Session invalidated: User-Agent changed.")
+
+        # Store or validate IP address
+        if not session.get('ip'):
+            session['ip'] = current_ip
+        elif session['ip'] != current_ip:
+            session.clear()
+            print("Session invalidated: IP address changed.")
+            flash("Session invalidated: IP address changed.", 'danger')
+            abort(403, description="Session invalidated: IP address changed.")
+
         return f(*args, **kwargs)
     
     return decorated_function
@@ -274,24 +306,10 @@ def errorhandler(e):
     Handles server errors and returns an error page.
     """
     print(f"Internal error server: {str(e)}")
+    flash("Internal error server.", 'danger')
     
     # Redirecionar para uma página de erro, se houver uma
     return redirect(url_for("error"))
-
-# Function to check the MongoDB connection before each request
-def check_mongo_connection():
-    """
-    Verifies the MongoDB connection before each request.
-    If the connection is successful, it prints a success message.
-    If the connection fails, it returns an error page.
-    """
-    try:
-        client.server_info()  # Verifies if the MongoDB server is accessible
-        print("✅ Connected to MongoDB successfully!")
-        return None  # Return None if the connection is successful
-    except Exception as e:
-        print(f"❌ Error connecting to MongoDB: {str(e)}")
-        return errorhandler("Error connecting to MongoDB: ", e)
 
 # Function to check if a user's credentials are valid in MongoDB
 def check_user_in_mongo(business_id, username, password):
@@ -321,7 +339,8 @@ def check_user_is_admin(business_id, username_or_email):
 
     Returns:
     - bool: True if the user is an admin, otherwise False.
-    """   
+    """
+
     try:
         business_collection = db_business[business_id]  # Access business collection
 
@@ -336,10 +355,8 @@ def check_user_is_admin(business_id, username_or_email):
 
         # Check if the user exists and if their role is 'admin'
         if user and user.get('role') == 'admin':
-            print(f"User {username_or_email} is an admin.")
             return True  # User is an admin
         else:
-            print(f"User {username_or_email} is not an admin.")
             return False  # User is not an admin
 
     except Exception as e:
@@ -362,6 +379,7 @@ def send_email(to_email, business_id, username, password, activation_link):
     Returns:
     - bool: True if the email is sent successfully, otherwise False.
     """
+
     subject = "Account Activation - AIIQData Team"
     body = f"""
     <html>
@@ -376,9 +394,13 @@ def send_email(to_email, business_id, username, password, activation_link):
         <p>- Business ID: {business_id}</p>
         <p>- Username: {username} or {to_email}</p>
         <p>- Password: {password}</p>
-        <br>
-        <p>Best regards,</p>
-        <b>AIIQData Team</b></p>
+        <br><br>
+        <p style="font-size: 14px; color: #555;">
+            Best regards,<br>
+            <strong>The AIIQData Team</strong><br>
+            <em>Empowering AI-driven decisions</em><br><br>
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..." width="30" height="30" alt="AIIQData Logo"/>
+        </p>
     </body>
     </html>
     """
@@ -416,6 +438,7 @@ def send_email_add_user(to_email, business_id, username, password):
     Returns:
     - bool: True if the email is sent successfully, otherwise False.
     """
+
     subject = "Access Credentials - Business AI"
     body = f"""
     <html>
@@ -427,9 +450,13 @@ def send_email_add_user(to_email, business_id, username, password):
         <p>- Username: {username}</p>
         <p>- Password: {password}</p>
         <p>Please log in, if you want to change your password contact your admin</p>
-        <br>
-        <p>Best regards,</p>
-        <b>AIIQData Team</b></p>
+        <br><br>
+        <p style="font-size: 14px; color: #555;">
+            Best regards,<br>
+            <strong>The AIIQData Team</strong><br>
+            <em>Empowering AI-driven decisions</em><br><br>
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..." width="30" height="30" alt="AIIQData Logo"/>
+        </p>
     </body>
     </html>
     """
@@ -459,6 +486,7 @@ def send_email_recover_password(to_email, business_id, username, activation_link
     Sends an recover password email.
 
     """
+
     subject = "Account Recover Password - AIIQData Team"
     body = f"""
     <html>
@@ -473,9 +501,13 @@ def send_email_recover_password(to_email, business_id, username, activation_link
         <p>- Business ID: {business_id}</p>
         <p>- Username: {username}</p>
         <p>- E-mail: {to_email}</p>
-        <br>
-        <p>Best regards,</p>
-        <b>AIIQData Team</b></p>
+        <br><br>
+        <p style="font-size: 14px; color: #555;">
+            Best regards,<br>
+            <strong>The AIIQData Team</strong><br>
+            <em>Empowering AI-driven decisions</em><br><br>
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..." width="30" height="30" alt="AIIQData Logo"/>
+        </p>
     </body>
     </html>
     """
@@ -500,29 +532,26 @@ def send_email_recover_password(to_email, business_id, username, activation_link
         return False
 
 # Function to check if a file extension is allowed
-def allowed_file(filename):
-    """
-    Checks if the file extension is allowed for upload.
+# def allowed_file(filename):
+#     """
+#     Checks if the file extension is allowed for upload.
     
-    Args:
-    - filename (str): The name of the file being uploaded.
+#     Args:
+#     - filename (str): The name of the file being uploaded.
 
-    Returns:
-    - bool: True if the file extension is allowed, otherwise False.
-    """
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+#     Returns:
+#     - bool: True if the file extension is allowed, otherwise False.
+#     """
+
+#     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
 def get_user_plan(business_id):
     """ Get the user's plan based on the business_id and return the plan details. If no plan exists, assume 'Free'. """
-    # Obter o nome do plano do usuário
-    user_data = db_business['users'].find_one({"business_id": business_id}, {"plan": 1})
+
+    user_data = db_business['users'].find_one({"business_id": business_id}, {"plan": 1}) # Get the user's plan name
     plan_name = user_data.get("plan", "Free") if user_data else "Free"
-    
-    # Obter os detalhes do plano na coleção 'plans'
-    plan_details = db_business['plans'].find_one({"plan": plan_name})
-    
-    # Se o plano não for encontrado, retorna os detalhes do plano 'Free' por padrão
-    return plan_details if plan_details else db_business['plans'].find_one({"plan": "free"})
+    plan_details = db_business['plans'].find_one({"plan": plan_name}) # Get the plan details from the 'plans' collection
+    return plan_details if plan_details else db_business['plans'].find_one({"plan": "free"}) # If the plan is not found, return the 'Free' plan details by default
 
 def check_plan_status(business_collection, username):
     """Verifies if the user’s plan has expired and updates to 'free' if necessary."""
@@ -533,10 +562,14 @@ def check_plan_status(business_collection, username):
         flash("Error: User not found.", 'error')
         return
 
-    # Verificar a validade do plano
-    validity_date = user_data.get("validity_date")
-    if validity_date and datetime.datetime.utcnow() > validity_date:
-        # Se o plano estiver expirado, altere para o plano free
+    validity_date = user_data.get("validity_date") # Check plan validity
+
+    if validity_date and validity_date.tzinfo is None:  
+        # Se for naive, forçar UTC
+        validity_date = validity_date.replace(tzinfo=timezone.utc)
+
+    if validity_date and datetime.now(timezone.utc) > validity_date:
+        # If the plan has expired, change to the free plan
         business_collection.update_one(
             {"username": username},
             {"$set": {"plantype": "free"}}
@@ -562,12 +595,11 @@ def generate_error_image(error_message):
         A BytesIO object containing the PNG image with the rendered error message.
     """
 
-    # Create a matplotlib figure and axis with a fixed size (8 inches wide, 2 inches tall)
-    fig, ax = plt.subplots(figsize=(8, 2))
+    fig, ax = plt.subplots(figsize=(8, 2)) # Create a matplotlib figure and axis with a fixed size (8 inches wide, 2 inches tall)
 
     # Display the error message in the center of the image with red font
     ax.text(
-        0.5, 0.5,                   # Position at the center of the axes (x=50%, y=50%)
+        0.5, 0.5,                  # Position at the center of the axes (x=50%, y=50%)
         error_message,             # The actual error message text
         fontsize=12,               # Font size for readability
         color='red',               # Red color to emphasize the error
@@ -576,23 +608,12 @@ def generate_error_image(error_message):
         wrap=True                  # Automatically wrap long text
     )
 
-    # Remove axis lines and ticks to produce a clean image
-    ax.axis('off')
-
-    # Create an in-memory binary stream to hold the image data
-    img = io.BytesIO()
-
-    # Save the figure as a PNG into the BytesIO buffer
-    plt.savefig(img, format='png', bbox_inches='tight')
-
-    # Rewind the buffer to the beginning so it can be read later
-    img.seek(0)
-
-    # Close the plot to free up memory
-    plt.close()
-
-    # Return the image with the message error
-    return base64.b64encode(img.getvalue()).decode('utf-8')
+    ax.axis('off') # Remove axis lines and ticks to produce a clean image
+    img = io.BytesIO() # Create an in-memory binary stream to hold the image data
+    plt.savefig(img, format='png', bbox_inches='tight') # Save the figure as a PNG into the BytesIO buffer
+    img.seek(0) # Rewind the buffer to the beginning so it can be read later
+    plt.close() # Close the plot to free up memory
+    return base64.b64encode(img.getvalue()).decode('utf-8') # Return the image with the message error
 
 def generate_token(email):
     serializer = URLSafeTimedSerializer(app.secret_key)
@@ -607,14 +628,6 @@ def verify_token(token, expiration=3600):
         print(f"Token verification failed: {e}")
         return None
 
-# Executing before each request to check MongoDB connection status
-@app.before_request
-def before_request():
-    """
-    Executes before each request to verify the MongoDB connection.
-    """
-    check_mongo_connection()
-
 # Registration route with email sending
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -623,20 +636,20 @@ def register():
         return render_template('register.html', site_key=site_key)
     
     session.clear()  # Limpa a sessão antes de iniciar uma nova
-
     recaptcha_response = request.form.get('g-recaptcha-response')
-    
     verify_url = "https://www.google.com/recaptcha/api/siteverify"
+
     payload = {
         'secret': secret_key,
         'response': recaptcha_response
     }
+
     response = requests.post(verify_url, data=payload)
     result = response.json()
     
     if not result.get('success'):
-        print("Verificação de humano falhou. Tente novamente.")
-        flash("Verificação de humano falhou. Tente novamente.", 'error')
+        print("Human verification failed. Please try again.")
+        flash("Human verification failed. Please try again.", 'error')
         return render_template('login.html', site_key=site_key)
     
     if request.method == 'POST':
@@ -678,7 +691,7 @@ def register():
                 "password": password,
                 "plantype": "free",
                 "role": "admin",
-                "created_at": datetime.datetime.now(datetime.timezone.utc),
+                "created_at": datetime.now(timezone.utc),
                 "activation_token": activation_token,
                 "is_active": False,
                 "info_database": f"{business_id}info", 
@@ -739,7 +752,6 @@ def register():
 @app.route('/activate/<token>')
 def activate_account(token):
     """ Activates the user account using the provided token. """
-
     # Iterate through collections to find the user by token
     for collection_name in db_business.list_collection_names():
         collection = db_business[collection_name]
@@ -772,7 +784,6 @@ def activate_account(token):
 
 @app.route('/')
 def home():
-
     file_doc = fshome.find_one()  # Pode passar filtros, se quiser
     video_filename1 = file_doc.filename if file_doc else None
 
@@ -824,8 +835,8 @@ def login():
     
     # If reCAPTCHA validation fails, notify the user
     if not result.get('success'):
-        print("Verificação de humano falhou. Tente novamente.")
-        flash("Verificação de humano falhou. Tente novamente.", 'error')
+        print("Human verification failed. Please try again.")
+        flash("Human verification failed. Please try again.", 'error')
         return render_template('login.html', site_key=site_key)
 
     # Check if all required fields are filled
@@ -901,7 +912,7 @@ def recover_password():
 
     except Exception as e:
         # Handle invalid business_id or database errors
-        print(f"Erro ao acessar a coleção: {e}")
+        print(f"Error accessing the collection: {e}")
         flash("Invalid Business ID.", "danger")
         return redirect(url_for('recover_password'))
 
@@ -984,6 +995,7 @@ def reset_password(token):
     return redirect(url_for('login'))
 
 @app.route('/index', methods=['GET', 'POST'])
+@login_required
 def index():
     """
     Handles requests for the index page. Verifies user authentication and retrieves user data.
@@ -1039,6 +1051,7 @@ def index():
     
 # Admin route to manage users
 @app.route('/admin')
+@login_required
 def admin():
     """
     Handles requests for the admin page. 
@@ -1073,6 +1086,7 @@ def admin():
                 {"username": {"$ne": user_name}}, 
                 {"_id": 0, "username": 1, "email": 2, "password": 3}
             ))
+            
             user_admin_info = list(business_collection.find(
                 {"role": "admin"},
                 {"_id": 0, "username": 1, "email": 2, "password": 3, "plantype": 4, "role": 5, "is_active": 7, "chatbot_usage": 11, "data_analisys_usage": 12, "validity_date": 14}
@@ -1103,6 +1117,7 @@ def admin():
 
 # Route to add a new user
 @app.route('/add_user', methods=['POST'])
+@login_required
 def add_user():
     # Check if the user is authenticated and is an admin
     user_name = session.get('username')
@@ -1166,7 +1181,7 @@ def add_user():
             'password': request.form.get('password'),
             'plantype': admin_plan,  # Use the same plan type as the admin
             'role': 'user',  # Ensure the new user is not an admin
-            'created_at': datetime.datetime.utcnow(),
+            'created_at': datetime.now(timezone.utc),
             'is_active': True,  # Always active by default
             "info_database": f"{business_id}info",
             "payment_info": admin_payment_info
@@ -1189,8 +1204,8 @@ def add_user():
 
 # Route to delete a user
 @app.route('/delete_user', methods=['POST'])
+@login_required
 def delete_user():
-
     # Check if the user is authenticated and is an admin
     user_name = session.get('username')
     business_id = session.get('business_id')
@@ -1246,8 +1261,8 @@ def delete_user():
     return redirect(url_for('admin'))
     
 @app.route('/add_question_and_answer', methods=['POST'])
+@login_required
 def add_question_and_answer():
-
     # Check if the user is authenticated and if they are an admin
     user_name = session.get('username')
     business_id = session.get('business_id')
@@ -1334,7 +1349,7 @@ def add_question_and_answer():
             'business_id': business_id,
             'added_by': user_name,
             'type': "answer_question",
-            'created_at': datetime.datetime.utcnow()
+            'created_at': datetime.now(timezone.utc)
         }
 
         # Insert the info data into MongoDB
@@ -1350,9 +1365,8 @@ def add_question_and_answer():
     return redirect(url_for('admin'))
 
 @app.route('/add_document', methods=['POST'])
+@login_required
 def add_document():
-    print("Adding new Document")
-
     # Check if the user is authenticated and if they are an admin
     user_name = session.get('username')
     business_id = session.get('business_id')
@@ -1385,26 +1399,17 @@ def add_document():
         flash("Invalid file name.", 'danger')
         return redirect(url_for('admin'))
 
-    # Access the collection specific to the Business ID provided
-    info_collection = db_business[f'{business_id}info']  # Collection for infos of the specific business_id
-
-    # Buscar o plano do usuário no MongoDB dentro da coleção específica do business_id
-    business_collection = db_business[business_id]  # Coleção do negócio
-    print(business_collection)
-    business_data = business_collection.find_one({}, {"plantype": 1})  # Buscar apenas o campo 'plan'
-    print(business_data)
-
-    # Verificar o plano do usuário
-    plan = get_user_plan(business_id)  # Função que retorna o plano do usuário
+    info_collection = db_business[f'{business_id}info']  # Collection for infos of the specific business_id # Access the collection specific to the Business ID provided
+    business_collection = db_business[business_id]  # Business collection # Retrieve the user's plan from MongoDB within the specific business_id collection
+    business_data = business_collection.find_one({}, {"plantype": 1})  # Retrieve only the 'plan' field
+    plan = get_user_plan(business_id) # Function that returns the user's plan # Check the user's plan
 
     if plan is None:
         print("Invalid or missing plan.")
         flash("Invalid or missing plan.", 'danger')
         return redirect(url_for('index'))
 
-    # Contar o número de usuários (considerando que cada usuário é um documento na coleção)
-    current_users = business_collection.count_documents({"type": "document"})  # Contando todos os documentos (usuários)
-    print(f"Number of users in collection {business_id}: {current_users}")
+    current_users = business_collection.count_documents({"type": "document"}) # Counting all documents (users) # Count the number of users (assuming each user is a document in the collection)
     
     if current_users >= plan['limit_users']:
         print("You have reached the maximum number of users for your plan.")
@@ -1417,13 +1422,10 @@ def add_document():
         return redirect(url_for('admin'))
 
     user_plan = business_data["plantype"]
-    print(f"User Plan Type: {user_plan}")  # Debug
 
     # Buscar os limites do plano na coleção 'plans', que está separada
     plans_collection = db_business["plans"]  # Pegamos a coleção `plans`
-    print(plans_collection)
     plan_data = plans_collection.find_one({"plan": user_plan}, {"limit_docs": 1})  # Buscar limite
-    print(plan_data)
     
     try:
         intro = request.form.get('intro')
@@ -1445,8 +1447,6 @@ def add_document():
             print("Markdown content is empty.")
             flash("Markdown content is empty.", 'danger')
             return redirect(url_for('admin'))
-        
-        print(f"Markdown Content: {markdown_content}")
 
         # Capture form data for the new info entry
         info_data = {
@@ -1457,7 +1457,7 @@ def add_document():
             'business_id': business_id,
             'added_by': user_name,
             'type': "document",
-            'created_at': datetime.datetime.utcnow()
+            'created_at': datetime.now(timezone.utc)
         }
 
         # Insert the info data into MongoDB
@@ -1478,9 +1478,8 @@ def add_document():
         return redirect(url_for('admin'))
     
 @app.route('/add_news', methods=['POST'])
+@login_required
 def add_news():
-    print("Adding new News")
-
     # Check if the user is authenticated and if they are an admin
     user_name = session.get('username')
     business_id = session.get('business_id')
@@ -1505,9 +1504,7 @@ def add_news():
 
     # Buscar o plano do usuário no MongoDB dentro da coleção específica do business_id
     business_collection = db_business[business_id]  # Coleção do negócio
-    print(business_collection)
     business_data = business_collection.find_one({}, {"plantype": 1})  # Buscar apenas o campo 'plan'
-    print(business_data)
 
     if not business_data or "plantype" not in business_data:
         print("Plan information not found. Please contact support.")
@@ -1545,13 +1542,10 @@ def add_news():
         return redirect(url_for('admin'))
 
     user_plan = business_data["plantype"]
-    print(f"User Plan Type: {user_plan}")  # Debug
 
     # Buscar os limites do plano na coleção 'plans', que está separada
     plans_collection = db_business["plans"]  # Pegamos a coleção `plans`
-    print(plans_collection)
     plan_data = plans_collection.find_one({"plan": user_plan}, {"limit_news": 1})  # Buscar limite
-    print(plan_data)
     
     try:
         title = request.form.get('title')
@@ -1565,7 +1559,7 @@ def add_news():
             'business_id': business_id,
             'added_by': user_name,
             'type': "news",
-            'created_at': datetime.datetime.utcnow()
+            'created_at': datetime.now(timezone.utc)
         }
 
         # Insert the new data into MongoDB
@@ -1583,8 +1577,8 @@ def add_news():
         return redirect(url_for('admin'))
 
 @app.route('/view_questions_and_answers/<business_id>/<int:page>', methods=['GET', 'POST'])
+@login_required
 def view_questions_and_answers(business_id, page):
-
     # Access the correct database (db_business)
     db_business = client['businessdata']  # Database for businesses
 
@@ -1619,7 +1613,6 @@ def view_questions_and_answers(business_id, page):
         
         # Check if the collection exists in the correct database
         if collection_name not in db_business.list_collection_names():
-            print(f"Error: Collection {collection_name} not found: {db_business.list_collection_names()}")
             return redirect(url_for('index'))
         
         # Access the info collection in the database
@@ -1641,8 +1634,8 @@ def view_questions_and_answers(business_id, page):
         return redirect(url_for('admin'))
     
 @app.route('/view_documents/<business_id>/<int:page>', methods=['GET', 'POST'])
+@login_required
 def view_documents(business_id, page):
-
     # Access the correct database (db_business)
     db_business = client['businessdata']  # Database for businesses
 
@@ -1677,7 +1670,6 @@ def view_documents(business_id, page):
         
         # Check if the collection exists in the correct database
         if collection_name not in db_business.list_collection_names():
-            print(f"Error: Collection {collection_name} not found: {db_business.list_collection_names()}")
             return redirect(url_for('index'))
         
         # Access the info collection in the database
@@ -1694,19 +1686,15 @@ def view_documents(business_id, page):
         return render_template('view_documents.html', user_name=user_name, user_data=user, infos=infos, page=page, total_pages=total_pages, business_id=business_id, is_admin=is_admin, user_business_id=business_id)
                                
     except Exception as e:
-        print(f"Error while viewing question: {str(e)}")
         return redirect(url_for('index'))
     
 @app.route('/view_news/<business_id>/<int:page>', methods=['GET', 'POST'])
+@login_required
 def view_news(business_id, page):
-
     # Access the correct database (db_business)
     db_business = client['businessdata']  # Database for businesses
-    print(db_business.list_collection_names())
-
     user_name = session.get('username')
     business_id = session.get('business_id')
-    print(f"Username: {user_name}, Business ID: {business_id}")
 
     if not user_name or not business_id:
         print("You must be logged in to add a news.")
@@ -1743,8 +1731,8 @@ def view_news(business_id, page):
         # Access the new collection in the database
         news = list(db_business[collection_name].find(
             {"type": "news"},  # Filtro para pegar apenas news com 'type': 'news'
-            {"_id": 1, "title": 1, "news": 1}
-        ).skip(skip).limit(results_per_page))
+            {"_id": 1, "title": 1, "news": 1, "created_at": 1} 
+        ).sort([("created_at", -1)]).skip(skip).limit(results_per_page))
         
         # Count the total number of news in the collection
         total_news = db_business[collection_name].count_documents({})
@@ -1760,6 +1748,7 @@ def view_news(business_id, page):
 
 # Route to edit info
 @app.route('/edit_questions_and_answers/<business_id>/<info_id>', methods=['GET', 'POST'])
+@login_required
 def edit_questions_and_answers(business_id, info_id):
     user_name = session.get('username')
     business_id = session.get('business_id')
@@ -1820,8 +1809,8 @@ def edit_questions_and_answers(business_id, info_id):
 
 # Route to edit info
 @app.route('/edit_documents/<business_id>/<info_id>', methods=['GET', 'POST'])
+@login_required
 def edit_documents(business_id, info_id):
-
     user_name = session.get('username')
     business_id = session.get('business_id')
 
@@ -1847,7 +1836,7 @@ def edit_documents(business_id, info_id):
             # Atualiza a info no banco de dados
             updated_question = request.form['question']
             updated_answer = request.form['answer']
-            #updated_procedure_path = request.form['procedure_path']
+            # updated_procedure_path = request.form['procedure_path']
 
             # Check if the fields are empty
             if not updated_question or not updated_answer:
@@ -1878,6 +1867,7 @@ def edit_documents(business_id, info_id):
     return render_template('edit_documents.html', user_name=user_name, user_data=user, business_id=business_id, info=info)
 
 @app.route('/edit_news/<business_id>/<new_id>', methods=['GET', 'POST'])
+@login_required
 def edit_news(business_id, new_id):
     # Get the username and business_id from the session
     user_name = session.get('username')
@@ -1930,7 +1920,7 @@ def edit_news(business_id, new_id):
 
     # Fetch the current new data to pre-populate the edit form
     new = db_business[collection_name].find_one({"_id": ObjectId(new_id)})
-    print(f"new: {new}")
+
     if not new:
         print("The news you are trying to edit was not found.")
         flash("The news you are trying to edit was not found.", 'error')
@@ -1940,6 +1930,7 @@ def edit_news(business_id, new_id):
 
 # Route to delete info
 @app.route('/delete_questions_and_answers/<business_id>/<info_id>', methods=['GET'])
+@login_required
 def delete_questions_and_answers(business_id, info_id):
 
     # Check if the user is authenticated and is an admin
@@ -1961,8 +1952,8 @@ def delete_questions_and_answers(business_id, info_id):
 
 # Route to delete info
 @app.route('/delete_documents/<business_id>/<info_id>', methods=['GET'])
+@login_required
 def delete_documents(business_id, info_id):
-
     # Check if the user is authenticated and is an admin
     user_name = session.get('username')
     business_id = session.get('business_id')
@@ -1982,6 +1973,7 @@ def delete_documents(business_id, info_id):
 
 # Route to delete new
 @app.route('/delete_news/<business_id>/<new_id>', methods=['GET'])
+@login_required
 def delete_news(business_id, new_id):
 
     # Check if the user is authenticated and is an admin
@@ -2003,6 +1995,7 @@ def delete_news(business_id, new_id):
     
 # Route for chatbot page
 @app.route('/chatbot')
+@login_required
 def chatbot():
     user_name = session.get('username')
     business_id = session.get('business_id')
@@ -2013,9 +2006,10 @@ def chatbot():
     business_collection = db_business[business_id]
     user = business_collection.find_one({"username": user_name})
 
-    return render_template('chatbot.html', user_name=user_name, user_data=user)
+    return render_template('chatbot.html', user_name=user_name, user_data=user, business_id=business_id)
 
 @app.route('/ask', methods=['POST'])
+@login_required
 def ask():
     """
     Route to ask the chatbot a question. Validates user authentication, 
@@ -2053,12 +2047,8 @@ def ask():
         return redirect(url_for('admin'))
     
     limit_chatbot = plan_data["limit_chatbot"]
-    print(f"limit_chatbot: {limit_chatbot}")
-    
-    # Retrieve the admin's chatbot usage count
-    admin_chatbot_usage = business_collection.find_one({"role": "admin"}, {"chatbot_usage": 1})
+    admin_chatbot_usage = business_collection.find_one({"role": "admin"}, {"chatbot_usage": 1}) # Retrieve the admin's chatbot usage count
     current_chatbot_count = admin_chatbot_usage.get("chatbot_usage", 0) if admin_chatbot_usage else 0
-    print(f"current_chatbot_count: {current_chatbot_count}")
     
     # Check if chatbot usage exceeds the plan limit
     if current_chatbot_count >= limit_chatbot:
@@ -2067,7 +2057,6 @@ def ask():
     # Retrieve the question from the request
     data = request.json
     question = data.get('question', '')
-    print(f"Question received: {question}")
     
     # Ensure a valid question is provided
     if not question:
@@ -2075,7 +2064,6 @@ def ask():
     
     # Call the chatbot function to generate a response
     response = ask_question(question, business_id)
-    print(f"Chatbot's response: {response}")
     
     # Handle errors in the chatbot response
     if 'error' in response:
@@ -2091,6 +2079,7 @@ def ask():
     return jsonify({'answer': response['answer']})
 
 @app.route('/ask_data', methods=['POST'])
+@login_required
 def ask_data():
     """
     Route to ask the chatbot a question. Validates user authentication, 
@@ -2128,12 +2117,8 @@ def ask_data():
         return redirect(url_for('admin'))
     
     limit_chatbot = plan_data["limit_chatbot"]
-    print(f"limit_chatbot: {limit_chatbot}")
-    
-    # Retrieve the admin's chatbot usage count
-    admin_chatbot_usage = business_collection.find_one({"role": "admin"}, {"chatbot_usage": 1})
+    admin_chatbot_usage = business_collection.find_one({"role": "admin"}, {"chatbot_usage": 1}) # Retrieve the admin's chatbot usage count
     current_chatbot_count = admin_chatbot_usage.get("chatbot_usage", 0) if admin_chatbot_usage else 0
-    print(f"current_chatbot_count: {current_chatbot_count}")
     
     # Check if chatbot usage exceeds the plan limit
     if current_chatbot_count >= limit_chatbot:
@@ -2142,15 +2127,12 @@ def ask_data():
     # Retrieve the question from the request
     data = request.json
     question = data.get('question', '')
-    print(f"Question received: {question}")
     
     # Ensure a valid question is provided
     if not question:
         return jsonify({'error': 'Invalid question'}), 400
     
-    # Call the chatbot function to generate a response
-    response = ask_question_data(question, business_id)
-    print(f"Chatbot's response: {response}")
+    response = ask_question_data(question, business_id) # Call the chatbot function to generate a response
     
     # Handle errors in the chatbot response
     if 'error' in response:
@@ -2166,6 +2148,7 @@ def ask_data():
     return jsonify({'answer': response['answer']})
 
 @app.route('/data_analysis', methods=['GET', 'POST'])
+@login_required
 def data_analysis():
     # Validate user authentication
     user_name = session.get('username')
@@ -2185,6 +2168,16 @@ def data_analysis():
     business_collection = db_business[business_id]
     user = business_collection.find_one({"username": user_name})
 
+    csv_collection_name = f"{business_id}dacsv"
+    csv_collection = db_business[csv_collection_name]
+
+    csv_history = list(
+        csv_collection.find(
+            {},
+            {"_id": 1, "file_name": 1, "user_input": 1, "created_at": 1}
+        ).sort("created_at", -1).limit(10)
+    )
+
     if request.method == 'POST':
         # === Register route access in MongoDB ===
         try:
@@ -2200,17 +2193,19 @@ def data_analysis():
                 "file_name": file_or_url,
                 "file_lines": "Not Availablbe",
                 "file_columns": "Not Availablbe",
-                "accessed_at": datetime.utcnow()
+                "accessed_at": datetime.now(timezone.utc)
                 }
             )
 
         except Exception as e:
             print(f"Could not save access log to MongoDB: {e}")
+            flash("Could not save access log to Database.", 'danger')
 
     # Apenas renderiza a página onde o usuário pode carregar o arquivo CSV
-    return render_template('data_analysis.html', business_id=business_id, user_name=user_name, user_data=user)
+    return render_template('data_analysis.html', business_id=business_id, user_name=user_name, user_data=user, csv_history=csv_history)
 
 @app.route('/data_analysis_googlesheets', methods=['GET', 'POST'])
+@login_required
 def data_analysis_googlesheets():
     # Validate user authentication
     user_name = session.get('username')
@@ -2230,8 +2225,17 @@ def data_analysis_googlesheets():
     business_collection = db_business[business_id]
     user = business_collection.find_one({"username": user_name})
 
+    gsheet_collection_name = f"{business_id}dags"
+    gsheet_collection = db_business[gsheet_collection_name]
+
+    gsheet_history = list(
+        gsheet_collection.find(
+            {},
+            {"_id": 1, "file_name": 1, "url": 1, "user_input": 1, "created_at": 1}
+        ).sort("created_at", -1).limit(10)
+    )
+
     if request.method == 'POST':
-        print("Starting data analysis")
         sheet_url = request.form.get('sheet-url')
 
         if not sheet_url:
@@ -2254,7 +2258,7 @@ def data_analysis_googlesheets():
                     "file_name": sheet_url,
                     "file_lines": "Not Availablbe",
                     "file_columns": "Not Availablbe",
-                    "accessed_at": datetime.utcnow()
+                    "accessed_at": datetime.now(timezone.utc)
                     }
                 )
 
@@ -2264,10 +2268,10 @@ def data_analysis_googlesheets():
             flash(f"Error: {str(e)}", "danger")
             return render_template("data_analysis_googlesheets.html", user_name=user_name, user_data=user, analysis=None)
 
-
-    return render_template("data_analysis_googlesheets.html", business_id=business_id, user_name=user_name, user_data=user, analysis=None)
+    return render_template("data_analysis_googlesheets.html", business_id=business_id, user_name=user_name, user_data=user, gsheet_history=gsheet_history, analysis=None)
 
 @app.route('/data_analysis_result', methods=['POST'])
+@login_required
 def data_analysis_result():
     # Validate user authentication
     user_name = session.get('username')
@@ -2303,12 +2307,8 @@ def data_analysis_result():
         return redirect(url_for('index'))
     
     limit_data_analisys = plan_data["limit_data_analisys"]
-    print(f"limit_data_analisys: {limit_data_analisys}")
-    
-    # Retrieve the admin's data_analysis usage count
-    admin_data_analisys_usage = business_collection.find_one({"role": "admin"}, {"data_analisys_usage": 1})
+    admin_data_analisys_usage = business_collection.find_one({"role": "admin"}, {"data_analisys_usage": 1}) # Retrieve the admin's data_analysis usage count
     current_data_analysis_count = admin_data_analisys_usage.get("data_analisys_usage", 0) if admin_data_analisys_usage else 0
-    print(f"current_data_analisys_count: {current_data_analysis_count}")
     
     # Check if chatbot usage exceeds the plan limit
     if current_data_analysis_count >= limit_data_analisys:
@@ -2317,56 +2317,208 @@ def data_analysis_result():
         return redirect(url_for('index'))
     
     try:
-        # Case 1: upload CSV file
-        if 'fileInput' in request.files:
-            file = request.files['fileInput']
-            if file.filename == '' or not file.filename.endswith('.csv'):
-                flash("Invalid CSV file.", 'warning')
-                return redirect(url_for('data_analysis'))
-            df = pd.read_csv(file)
+        history_id = request.form.get("history_id")
+        source_page = request.form.get("source_page")
 
-        # Case 2: dados do Google Sheets (por exemplo, a URL da planilha vem em um campo)
-        elif 'sheet-url' in request.form:
-            sheet_url = request.form.get('sheet-url')
-            if not sheet_url:
-                flash("Google Sheets URL is required.", 'warning')
-                return redirect(url_for('data_analysis_googlesheets'))
-            df, sheet_info = load_google_sheet_data_analysis(sheet_url, business_id)  # sua função de carregar a planilha do Google Sheets
-        
+        df = None
+        source_type = None
+        file_name = None
+        file_lines = None
+        file_columns = None
+
+        # ------------------------------
+        # Case 1: CSV
+        if source_page == "data_analysis" and history_id:
+            hist_collection = db_business[f"{business_id}dacsv"]
+
+            try:
+                obj_id = ObjectId(history_id)
+
+            except Exception:
+                print("Invalid History ID format.")
+                flash("Invalid History ID format.", "danger")
+                return redirect(url_for("data_analysis"))
+            
+            data_analysis_doc = hist_collection.find_one({"_id": obj_id})
+
+            if not data_analysis_doc:
+                print("No historical data found.")
+                flash("Historical data not found.", "warning")
+                return redirect(url_for("data_analysis"))
+
+            csv_collection = db_business[f"{business_id}csv"]
+            csv_collection.delete_many({}) # Clear previous analysis data for this business_id
+
+            analysis_doc = {
+                "business_id": business_id,
+                "charts": data_analysis_doc.get("charts", []),
+                "explanations": data_analysis_doc.get("explanations", []),
+                "explanationsai": data_analysis_doc.get("explanationsai", []),
+                "summary": data_analysis_doc.get("summary", ""),
+                "created_at": datetime.now(timezone.utc)
+            }
+            csv_collection.insert_one(analysis_doc)
+
+        # ------------------------------
+        # Case 2: Google Sheets
+        elif source_page == "data_analysis_googlesheets" and history_id:
+            hist_collection = db_business[f"{business_id}dags"]
+
+            try:
+                obj_id = ObjectId(history_id)
+
+            except Exception:
+                print("Invalid History ID format.")
+                flash("Invalid History ID format.", "danger")
+                return redirect(url_for("data_analysis_googlesheets"))
+
+            data_analysis_doc = hist_collection.find_one({"_id": obj_id})
+
+            if not data_analysis_doc:
+                print("No historical data found.")
+                flash("Historical data not found.", "warning")
+                return redirect(url_for("data_analysis_googlesheets"))
+
+            csv_collection = db_business[f"{business_id}csv"]
+            csv_collection.delete_many({}) # Clear previous analysis data for this business_id
+            
+            analysis_doc = {
+                "business_id": business_id,
+                "charts": data_analysis_doc.get("charts", []),
+                "explanations": data_analysis_doc.get("explanations", []),
+                "explanationsai": data_analysis_doc.get("explanationsai", []),
+                "summary": data_analysis_doc.get("summary", ""),
+                "created_at": datetime.now(timezone.utc)
+            }
+            csv_collection.insert_one(analysis_doc)
+
+        # ------------------------------
+        # Case 3: New upload (CSV or Google Sheets)
         else:
-            flash("No data provided for analysis.", 'warning')
-            return redirect(url_for('data_analysis'))
-        
-        # Definir uma entrada do usuário (ou pegar de um form se desejar)
-        user_input = request.form.get('user_input', None)  # Pode vir de request.form.get('user_input') também
+            # Increment the chatbot usage counter for the admin
+            business_collection.update_one(
+                {"role": "admin"}, 
+                {"$inc": {"data_analisys_usage": 1}}
+            )
 
-        if not user_input:
-            print("User input not provided.")
-            flash("EUser input not provided.", 'warning')
-            return redirect(url_for('data_analysis'))
+            # Case 3.1: upload CSV file
+            if 'fileInput' in request.files:
+                file = request.files['fileInput']
+                if file.filename == '' or not file.filename.endswith('.csv'):
+                    print("Invalid CSV file.")
+                    flash("Invalid CSV file.", 'warning')
+                    return redirect(url_for('data_analysis'))
+                
+                df = pd.read_csv(file, encoding='utf-8', on_bad_lines='skip')
+                source_type = "csv"
+                file_name = file.filename
+                file_lines, file_columns = df.shape
 
-        # Chamar a função de análise
-        analyze_data(df, user_input)
+            # Case 3.2: Google Sheets data (for example, the spreadsheet URL comes from a field)
+            elif 'sheet-url' in request.form:
+                sheet_url = request.form.get('sheet-url')
+                if not sheet_url:
+                    print("Google Sheets URL is required.")
+                    flash("Google Sheets URL is required.", 'warning')
+                    return redirect(url_for('data_analysis_googlesheets'))
+                
+                df, sheet_info = load_google_sheet_data_analysis(sheet_url, business_id)
+                source_type = "googlesheets"
+                file_name = sheet_info.get("sheet_title", sheet_url)
+                file_lines, file_columns = df.shape
 
-        # Buscar o documento com os dados de análise para esse business_id
-        data_analysis_doc = csv_collection.find_one({"business_id": business_id})
+            # Case 3.3: No data provided for analysis
+            else:
+                print("No data provided for analysis.")
+                flash("No data provided for analysis.", 'warning')
+                return redirect(url_for('data_analysis'))
+            
+            # Ensure df is a DataFrame
+            if not isinstance(df, pd.DataFrame):
+            
+                if isinstance(df, list):
+                    df = pd.DataFrame(df)
 
-        # Buscar os dados recém salvos para renderizar
-        data_analysis_doc = csv_collection.find_one({
-            "business_id": business_id,
-            "charts": {"$exists": True, "$ne": []},
-            "summary": {"$exists": True},
-            "explanations": {"$exists": True},
-            "explanationsai": {"$exists": True}
-        })
-        print(f"Result data_analysis_doc: {data_analysis_doc}")
+                elif isinstance(df, dict):
+                    df = pd.DataFrame([df])
+                    
+                else:
+                    print(f"Error converting data to DataFrame: {str(e)}")
+                    flash(f"Error converting data to DataFrame: {str(e)}", "danger")
+                    return redirect(url_for('data_analysis'))
+                    
+            # Define a user input (or get it from a form if desired)
+            user_input = request.form.get('user_input', None)  # It can also come from request.form.get('user_input')
 
-        if not data_analysis_doc:
-            print("Error retrieving results after analysis.")
-            flash("Error retrieving results after analysis.", 'warning')
-            return redirect(url_for('data_analysis'))
-        
-        business_collection.update_one({"role": "admin"}, {"$inc": {"data_analisys_usage": 1}})
+            if not user_input:
+                print("User input not provided.")
+                flash("EUser input not provided.", 'warning')
+                return redirect(url_for('data_analysis'))
+            
+            # Guarantee df is a DataFrame (force conversion if needed)
+            if not isinstance(df, pd.DataFrame):
+
+                if isinstance(df, list):
+                    df = pd.DataFrame(df)
+                    
+                elif isinstance(df, dict):
+                    df = pd.DataFrame([df])
+
+                else:
+                    print(f"Error converting data to DataFrame: {type(df)}")
+                    flash("Error converting data to DataFrame. Please upload a valid CSV or Google Sheet.", "danger")
+                    return redirect(url_for('data_analysis'))
+
+            analyze_data(df, user_input) # Call the analysis function
+            data_analysis_doc = csv_collection.find_one({"business_id": business_id}) # Fetch the document with the analysis data for this business_id
+
+            # Fetch the newly saved data for rendering
+            data_analysis_doc = csv_collection.find_one({
+                "business_id": business_id,
+                "charts": {"$exists": True, "$ne": []},
+                "summary": {"$exists": True},
+                "explanations": {"$exists": True},
+                "explanationsai": {"$exists": True}
+            })
+
+            if not data_analysis_doc:
+                print("Error retrieving results after analysis.")
+                flash("Error retrieving results after analysis.", 'warning')
+                return redirect(url_for('data_analysis'))
+            
+            # Save entry + result to historical collection
+            if source_type == "csv":
+                hist_collection_name = f"{business_id}dacsv"
+
+            else:
+                hist_collection_name = f"{business_id}dags"
+
+            hist_collection = db_business[hist_collection_name]
+
+            # Keep only last 5 entries
+            total_docs = hist_collection.count_documents({})
+            if total_docs >= 5:
+                oldest_doc = hist_collection.find().sort("created_at", 1).limit(1)
+                if oldest_doc:
+                    hist_collection.delete_one({"_id": oldest_doc[0]["_id"]})
+
+            hist_collection.insert_one({
+                "business_id": business_id,
+                "username": user_name,
+                "source_type": source_type,
+                "file_name": file_name,
+                "file_lines": file_lines,
+                "file_columns": file_columns,
+                "user_input": user_input,
+                "file": data_analysis_doc.get("file", ""),
+                "charts": data_analysis_doc.get("charts", []),
+                "explanations": data_analysis_doc.get("explanations", []),
+                "explanationsai": data_analysis_doc.get("explanationsai", []),
+                "summary": data_analysis_doc.get("summary", ""),
+                "created_at": datetime.now(timezone.utc)
+            })
+
+            business_collection.update_one({"role": "admin"}, {"$inc": {"data_analysis_usage": 1}})
 
         business_collection = db_business[business_id]
         user = business_collection.find_one({"username": user_name})
@@ -2388,34 +2540,27 @@ def data_analysis_result():
         traceback.print_exc()
         return redirect(url_for('data_analysis'))
 
-# Rota de download
+# Download route
 @app.route('/download_pdf', methods=['GET'])
+@login_required
 def download_pdf():
-    # Recuperar os dados da análise armazenados na sessão
+    # Retrieve the analysis data stored in the session
     result = session.get('data_analysis_result')
 
     if not result:
-        return "Erro: Resultados não encontrados.", 400
+        return "Error: Results not found.", 400
 
-    # Criar um buffer para gerar o PDF
-    buffer = BytesIO()
-
-    # Criar um canvas para o PDF com o tamanho de página carta (letter)
-    c = canvas.Canvas(buffer, pagesize=letter)
+    
+    buffer = BytesIO() # Create a buffer to generate the PDF
+    c = canvas.Canvas(buffer, pagesize=letter) # Create a canvas for the PDF with letter page size
     width, height = letter
-
-    # Definir a posição inicial para o conteúdo
-    y_position = height - 40
+    y_position = height - 40 # Set the initial position for the content
     line_height = 12
-
-    # Adicionar título ao PDF
-    c.setFont("Helvetica-Bold", 14)
-    c.drawString(40, y_position, "Resultado da Análise de Dados")
+    c.setFont("Helvetica-Bold", 14) # Add title to the PDF
+    c.drawString(40, y_position, "Data Analysis Result")
     y_position -= line_height * 2
-
-    # Adicionar resumo
-    c.setFont("Helvetica", 10)
-    c.drawString(40, y_position, "Resumo da Análise:")
+    c.setFont("Helvetica", 10) # Add summary
+    c.drawString(40, y_position, "Analysis Summary:")
     y_position -= line_height
 
     summary = result['summary']
@@ -2423,15 +2568,15 @@ def download_pdf():
         c.drawString(40, y_position, line)
         y_position -= line_height
 
-    # Adicionar gráficos e explicações
+    # Add charts and explanations
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(40, y_position, "Gráficos e Explicações:")
+    c.drawString(40, y_position, "Charts and Explanations:")
     y_position -= line_height * 2
 
-    # Adicionar os gráficos em formato SVG (base64) e explicações
+    # Add the charts in SVG (base64) format and explanations
     for chart, explanation, explanationai in zip(result['charts'], result['explanations'], result['explanationsai']):
-        # Aqui você pode criar um método para converter o gráfico SVG em imagem e adicioná-la ao PDF
-        # Como exemplo, estamos incluindo apenas a explicação
+        # Here you can create a method to convert the SVG chart into an image and add it to the PDF
+        # As an example, we are only including the explanation
         c.setFont("Helvetica", 10)
         c.drawString(40, y_position, explanation)
         y_position -= line_height
@@ -2441,15 +2586,12 @@ def download_pdf():
         y_position -= line_height
 
         if y_position < 40:
-            c.showPage()  # Criar uma nova página se o conteúdo ultrapassar o limite da página
+            c.showPage()  # Create a new page if the content exceeds the page limit
 
-    # Salvar o PDF no buffer
-    c.save()
+    c.save() # Save the PDF to the buffer
+    buffer.seek(0) # Return to the beginning of the buffer
 
-    # Voltar para o início do buffer
-    buffer.seek(0)
-
-    # Enviar o arquivo PDF para download
+    # Send the PDF file for download
     return send_file(buffer, as_attachment=True, download_name="data_analysis_result.pdf", mimetype='application/pdf')
 
 @app.route('/payment/<plan>', methods=['GET'])
@@ -2497,13 +2639,10 @@ def payment(plan):
         print("Error: Business ID not found! Please log in again.")
         flash("Error: Business ID not found! Please log in again.", 'error')
         return redirect(url_for('login'))  # Ou qualquer outra página adequada
-
-    print(f"business_id: {business_id}")
     
     try:
         # Verifica se a coleção do business_id existe no MongoDB
         business_collection = db_business[business_id]
-        print(f"business_collection: {business_collection}")
 
         if business_collection is None:
             return render_template('payment.html', error=f'Business collection {business_id} not found in the database!')
@@ -2574,34 +2713,27 @@ def payment_processing(plan):
 
 
     try:
-        # Acessar a coleção de planos
-        plans_collection = db_business["plans"]
-        
-        # Buscar os dados do plano selecionado
-        plan_data = plans_collection.find_one({"plan": plan})
+        plans_collection = db_business["plans"] # Access the plans collection
+        plan_data = plans_collection.find_one({"plan": plan}) # Fetch the data of the selected plan
 
         if not plan_data:
             print("Plan not found!")
             flash("Plan not found!", 'error')
             return redirect(url_for('payment', plan=plan))
         
-        # Obter o preço em dólares do plano
-        price_dollars = plan_data["price"]
+        price_dollars = plan_data["price"] # Get the plan price in dollars
 
-        # Verifique se o preço é válido
-        if price_dollars <= 0:
+        if price_dollars <= 0: # Check if the price is valid
             print("Invalid price for the plan.")
             flash("Invalid price for the plan.", 'error')
             return redirect(url_for('payment', plan=plan))
         
-        # Converte o preço de dólares para centavos (Stripe exige valor em centavos)
-        amount_in_cents = int(price_dollars * 100)
+        amount_in_cents = int(price_dollars * 100) # Convert the price from dollars to cents (Stripe requires amount in cents)
 
-        # Criação da cobrança no Stripe
-
-        # Determinar as opções de pagamento de acordo com a escolha
+        # Create the charge in Stripe
+        # Determine payment options according to user's choice
         if payment_option == 'installments':
-            # Verificar se o parcelamento é suportado
+            # Check if installments are supported
             payment_intent = stripe.PaymentIntent.create(
                 amount=amount_in_cents,
                 currency='usd',
@@ -2612,9 +2744,9 @@ def payment_processing(plan):
                         'installments': {
                             'enabled': True,
                             'plan': {
-                                'count': 12,  # O número de parcelas
-                                'interval': 'month',  # Intervalo de tempo entre as parcelas
-                                'type': 'fixed_count'  # Tipo de parcelamento fixo
+                                'count': 12, # Number of installments
+                                'interval': 'month', # Interval between installments
+                                'type': 'fixed_count' # Fixed number of installments
                             }
                         }
                     }
@@ -2624,15 +2756,15 @@ def payment_processing(plan):
 
         else:
             payment_intent = stripe.PaymentIntent.create(
-                amount=amount_in_cents,  # Valor em centavos, ajuste conforme necessário
+                amount=amount_in_cents, # Amount in cents, adjust as needed
                 currency='usd',
                 payment_method=payment_method_id,
-                confirm=True, # Confirma o pagamento diretamente
+                confirm=True, # Confirm the payment immediately
                 automatic_payment_methods={
-                    'enabled': True,  # Habilita métodos automáticos de pagamento
-                    'allow_redirects': 'never'  # Impede redirecionamentos, se necessário
+                    'enabled': True, # Enable automatic payment methods
+                    'allow_redirects': 'never' # Prevent redirects if necessary
                 },
-                return_url='https://suaurl.com/return',  # URL de retorno após pagamento
+                return_url='https://suaurl.com/return', # Return URL after payment
             )
 
         if payment_intent.status == 'succeeded':
@@ -2640,32 +2772,20 @@ def payment_processing(plan):
             amount = payment_intent.amount
             currency = payment_intent.currency
             status = payment_intent.status
-            payment_date = datetime.datetime.utcnow()
+            payment_date = datetime.now(timezone.utc)
+            business_collection = db_business[business_id] # Access the correct collection inside the business database
+            validity_date = payment_date + timedelta(days=365) # Calculate validity date (1 year after payment date)
 
-            print(f"transaction_id: {transaction_id}")
-            print(f"amount: {amount}")
-            print(f"currency: {currency}")
-            print(f"status: {status}")
-            print(f"payment_date: {payment_date}")
-
-            # Acessa a coleção correta dentro do banco businessdata
-            business_collection = db_business[business_id]
-
-            print(f"Accessing collection: {business_collection}")
-
-            # Calcular a data de validade (1 ano após a data de pagamento)
-            validity_date = payment_date + datetime.timedelta(days=365)
-
-            # Atualizar o plano do usuário e as informações de pagamento no banco de dados
+            # Update the user's plan and payment info in the database
             result = business_collection.update_many(
-                {},  # Atualiza todos os documentos dentro dessa coleção
+                {},  # Update all documents inside this collection
                 {
                     "$set": {
-                        "plantype": plan,  # Atualiza o plano para o selecionado
+                        "plantype": plan, # Update the plan to the selected one
                         "validity_date": validity_date,
                         "payment_info": {
-                            "transaction_id": transaction_id,  # ID da transação Stripe
-                            "amount": amount / 100,  # Valor pago, convertido para reais
+                            "transaction_id": transaction_id, # Stripe transaction ID
+                            "amount": amount / 100, # Paid amount, converted to dollars
                             "currency": currency,
                             "status": status,
                             "payment_date": payment_date,
@@ -2676,12 +2796,12 @@ def payment_processing(plan):
                 }
             )
 
-            # Inserir os dados de pagamento na coleção 'payments'
+            # Insert payment data in the 'payments' collection
             payments_collection = db_business["payments"]
 
             payment_data = {
                 "transaction_id": transaction_id,
-                "amount": amount / 100,  # Valor pago
+                "amount": amount / 100,
                 "currency": currency,
                 "status": status,
                 "payment_date": payment_date,
@@ -2704,7 +2824,6 @@ def payment_processing(plan):
                 print(f"Plan {plan} successfully updated!")
                 flash(f"Plan {plan} successfully updated!", 'success')
 
-            # Lógica de sucesso
             print(f"Payment successfully confirmed! The {plan} plan has been activated.")
             flash(f"Payment successfully confirmed! The {plan} plan has been activated.", 'success')
             return redirect(url_for('index', plan=plan))
@@ -2806,7 +2925,7 @@ def logout():
     if request.method == 'GET':
         return render_template('login.html', site_key=site_key)
     
-    session.clear()  # Limpa a sessão antes de iniciar uma nova
+    session.clear()  # Clear the session before starting a new one
 
     business_id = request.form.get('business_id')
     username_or_email = request.form.get('username')
@@ -2823,7 +2942,8 @@ def logout():
     result = response.json()
     
     if not result.get('success'):
-        flash('Verificação de humano falhou. Tente novamente.')
+        print("Human verification failed. Please try again.")
+        flash("Human verification failed. Please try again.", 'warning')
         return render_template('login.html', site_key=site_key)
     
     return render_template('login.html', site_key=site_key)
@@ -2937,6 +3057,7 @@ def histogramwithkde():
         # Case 1: CSV file upload
         # -----------------------------------------------
         # If a CSV file is provided via the 'file' field in the request
+        file = request.files.get("file")
         if 'file' in request.files and request.files['file'].filename != '':
             # Read the file from the request
             file = request.files['file']
@@ -2973,8 +3094,8 @@ def histogramwithkde():
         # --------------------------------
         else:
             # Show a warning message to the user
-            flash("Please upload a CSV file or a valid Google Sheets URL.", "warning")
             print(f"Please upload a CSV file or a valid Google Sheets URL.")
+            flash("Please upload a CSV file or a valid Google Sheets URL.", "warning")
             # Redirect the user to the home page
             return redirect(url_for('index'))
 
@@ -2982,6 +3103,7 @@ def histogramwithkde():
         numeric_cols = df.select_dtypes(include='number').columns
 
         if len(numeric_cols) == 0:
+            print("There is not numeric columns in yhe file")
             flash("There is not numeric columns in yhe file", "warning")
             return redirect(url_for('index'))
         
@@ -3018,7 +3140,7 @@ def histogramwithkde():
                 "file_name": file.filename if file else sheet_url_histogramwithkde,
                 "file_lines": file_lines,
                 "file_columns": file_columns,
-                "accessed_at": datetime.datetime.utcnow()
+                "accessed_at": datetime.now(timezone.utc)
                 }
             )
 
@@ -3073,6 +3195,7 @@ def boxplot():
 
     # Validate session: Ensure user is authenticated and business ID is present
     if not user_name or not business_id:
+        print("User not authenticated or missing business ID.")
         flash("User not authenticated or missing business ID.", 'danger')
         return redirect(url_for('login'))
 
@@ -3084,6 +3207,7 @@ def boxplot():
         # Case 1: CSV file upload
         # -----------------------------------------------
         # If a CSV file is provided via the 'file' field in the request
+        file = request.files.get("file")
         if 'file' in request.files and request.files['file'].filename != '':
             # Read the file from the request
             file = request.files['file']
@@ -3096,7 +3220,6 @@ def boxplot():
         elif 'sheet-url-boxplot' in request.form and request.form['sheet-url-boxplot'].strip() != '':
             # Retrieve and clean the submitted URL
             sheet_url_boxplot = request.form['sheet-url-boxplot'].strip()
-            
             # Create credentials from service account info
             credentials = Credentials.from_service_account_info(SERVICE_ACCOUNT_INFO, scopes=SCOPES)
             # Authorize client using gspread and credentials
@@ -3120,38 +3243,61 @@ def boxplot():
         # --------------------------------
         else:
             # Show a warning message to the user
-            flash("Please upload a CSV file or a valid Google Sheets URL.", "warning")
             print(f"Please upload a CSV file or a valid Google Sheets URL.")
+            flash("Please upload a CSV file or a valid Google Sheets URL.", "warning")
             # Redirect the user to the home page
             return redirect(url_for('index'))
 
-        # Initialize a new figure for the plot
-        plt.figure(figsize=(12, 6))
-        # Generate a Box Plot for all numeric columns in the DataFrame
-        sns.boxplot(data=df.select_dtypes(include='number'))
-        plt.title('Box Plot')
-        img = io.BytesIO() # Save the plot to an in-memory buffer (no need to write to disk)
+        # Select numeric columns
+        numeric_cols = df.select_dtypes(include='number').columns
+        if len(numeric_cols) == 0:
+            print("There are no numeric columns in the file.")
+            flash("There are no numeric columns in the file.", "warning")
+            return redirect(url_for('index'))
+
+        # Create figure with subplots: 1 for the general view + N for individual plots
+        total_plots = 1 + len(numeric_cols)  # 1 geral + individuais
+        fig, axs = plt.subplots(total_plots, 1, figsize=(12, 4 * total_plots))
+
+        # Ensure axs is always iterable
+        if total_plots == 1:
+            axs = [axs]
+
+        # General plot
+        sns.boxplot(data=df[numeric_cols], ax=axs[0])
+        axs[0].set_title('Boxplot - All Numeric Columns', fontsize=14)
+        axs[0].set_ylabel("Values")
+
+        # Individual plots
+        for ax, col in zip(axs[1:], numeric_cols):
+            sns.boxplot(y=df[col], ax=ax, width=0.3)
+            ax.set_title(f'Boxplot - {col}', fontsize=14)
+            ax.set_ylabel(col)
+
+        plt.tight_layout()
+
+        # Convert to base64
+        img = io.BytesIO()
         plt.savefig(img, format='png')
         img.seek(0)
         plt.close()
-        img_base64 = base64.b64encode(img.getvalue()).decode('utf-8') # Encode the image to base64 so it can be returned in a JSON response
+        img_base64 = base64.b64encode(img.getvalue()).decode('utf-8')
 
+        # Register
         file_lines = len(df) + 1
         file_columns = df.shape[1]
         collection_name = f"{business_id}notebook"
-        db_business[collection_name].insert_one(
-                {
-                "dataanalysis": "Boxplot",
-                "username": user_name,
-                "business_id": business_id,
-                "file_name": file.filename if file else sheet_url_boxplot,
-                "file_lines": file_lines,
-                "file_columns": file_columns,
-                "accessed_at": datetime.datetime.utcnow()
-                }
-            )
 
-        # Return the base64-encoded image wrapped in a JSON object
+        db_business[collection_name].insert_one({
+            "dataanalysis": "Boxplot",
+            "username": user_name,
+            "business_id": business_id,
+            "file_name": file.filename if file else sheet_url_boxplot,
+            "file_lines": file_lines,
+            "file_columns": file_columns,
+            "accessed_at": datetime.now(timezone.utc)
+        })
+
         return {"image": img_base64}
     
     except Exception as e:
@@ -3204,6 +3350,7 @@ def correlationmatrix():
 
     # Validate authentication and session integrity
     if not user_name or not business_id:
+        print("User not authenticated or missing business ID.")
         flash("User not authenticated or missing business ID.", 'danger')
         return redirect(url_for('login'))
 
@@ -3215,6 +3362,7 @@ def correlationmatrix():
         # Case 1: CSV file upload
         # -----------------------------------------------
         # If a CSV file is provided via the 'file' field in the request
+        file = request.files.get("file")
         if 'file' in request.files and request.files['file'].filename != '':
             # Read the file from the request
             file = request.files['file']
@@ -3251,8 +3399,8 @@ def correlationmatrix():
         # --------------------------------
         else:
             # Show a warning message to the user
-            flash("Please upload a CSV file or a valid Google Sheets URL.", "warning")
             print(f"Please upload a CSV file or a valid Google Sheets URL.")
+            flash("Please upload a CSV file or a valid Google Sheets URL.", "warning")
             # Redirect the user to the home page
             return redirect(url_for('index'))
 
@@ -3279,7 +3427,7 @@ def correlationmatrix():
                 "file_name": file.filename if file else sheet_url_correlationmatrix,
                 "file_lines": file_lines,
                 "file_columns": file_columns,
-                "accessed_at": datetime.datetime.utcnow()
+                "accessed_at": datetime.now(timezone.utc)
                 }
             )
 
@@ -3336,6 +3484,7 @@ def scatterplot():
 
     # Verify user authentication and business context
     if not user_name or not business_id:
+        print("User not authenticated or missing business ID.")
         flash("User not authenticated or missing business ID.", 'danger')
         return redirect(url_for('login'))
 
@@ -3347,6 +3496,7 @@ def scatterplot():
         # Case 1: CSV file upload
         # -----------------------------------------------
         # If a CSV file is provided via the 'file' field in the request
+        file = request.files.get("file")
         if 'file' in request.files and request.files['file'].filename != '':
             # Read the file from the request
             file = request.files['file']
@@ -3383,14 +3533,15 @@ def scatterplot():
         # --------------------------------
         else:
             # Show a warning message to the user
-            flash("Please upload a CSV file or a valid Google Sheets URL.", "warning")
             print(f"Please upload a CSV file or a valid Google Sheets URL.")
+            flash("Please upload a CSV file or a valid Google Sheets URL.", "warning")
             # Redirect the user to the home page
             return redirect(url_for('index'))
 
         numeric_cols = df.select_dtypes(include='number').columns
 
         if len(numeric_cols) == 0:
+            print("There is not numeric columns in yhe file")
             flash("There is not numeric columns in yhe file", "warning")
             return redirect(url_for('index'))
 
@@ -3430,7 +3581,7 @@ def scatterplot():
                 "file_name": file.filename if file else sheet_url_scatterplot,
                 "file_lines": file_lines,
                 "file_columns": file_columns,
-                "accessed_at": datetime.datetime.utcnow()
+                "accessed_at": datetime.now(timezone.utc)
                 }
             )
         
@@ -3464,6 +3615,7 @@ def linechart():
 
     # Ensure the user is logged in and associated with a business
     if not user_name or not business_id:
+        print("User not authenticated or missing business ID.")
         flash("User not authenticated or missing business ID.", 'danger')
         return redirect(url_for('login'))
 
@@ -3475,6 +3627,7 @@ def linechart():
         # Case 1: CSV file upload
         # -----------------------------------------------
         # If a CSV file is provided via the 'file' field in the request
+        file = request.files.get("file")
         if 'file' in request.files and request.files['file'].filename != '':
             # Read the file from the request
             file = request.files['file']
@@ -3511,8 +3664,8 @@ def linechart():
         # --------------------------------
         else:
             # Show a warning message to the user
-            flash("Please upload a CSV file or a valid Google Sheets URL.", "warning")
             print(f"Please upload a CSV file or a valid Google Sheets URL.")
+            flash("Please upload a CSV file or a valid Google Sheets URL.", "warning")
             # Redirect the user to the home page
             return redirect(url_for('index'))
 
@@ -3553,7 +3706,7 @@ def linechart():
                 "file_name": file.filename if file else sheet_url_linechart,
                 "file_lines": file_lines,
                 "file_columns": file_columns,
-                "accessed_at": datetime.datetime.utcnow()
+                "accessed_at": datetime.now(timezone.utc)
                 }
             )
         
@@ -3617,6 +3770,7 @@ def piechart():
 
     # Ensure that both username and business ID are present
     if not user_name or not business_id:
+        print("User not authenticated or missing business ID.")
         flash("User not authenticated or missing business ID.", 'danger')
         return redirect(url_for('login'))
 
@@ -3628,6 +3782,7 @@ def piechart():
         # Case 1: CSV file upload
         # -----------------------------------------------
         # If a CSV file is provided via the 'file' field in the request
+        file = request.files.get("file")
         if 'file' in request.files and request.files['file'].filename != '':
             # Read the file from the request
             file = request.files['file']
@@ -3664,8 +3819,8 @@ def piechart():
         # --------------------------------
         else:
             # Show a warning message to the user
-            flash("Please upload a CSV file or a valid Google Sheets URL.", "warning")
             print(f"Please upload a CSV file or a valid Google Sheets URL.")
+            flash("Please upload a CSV file or a valid Google Sheets URL.", "warning")
             # Redirect the user to the home page
             return redirect(url_for('index'))
 
@@ -3731,7 +3886,7 @@ def piechart():
                 "file_name": file.filename if file else sheet_url_piechart,
                 "file_lines": file_lines,
                 "file_columns": file_columns,
-                "accessed_at": datetime.datetime.utcnow()
+                "accessed_at": datetime.now(timezone.utc)
                 }
             )
 
@@ -3755,6 +3910,7 @@ def olap_slice_dice():
     business_id = session.get('business_id')
 
     if not user_name or not business_id:
+        print("User not authenticated or missing business ID.")
         flash("User not authenticated or missing business ID.", 'danger')
         return redirect(url_for('login'))
 
@@ -3762,6 +3918,7 @@ def olap_slice_dice():
         # Case 1: CSV file upload
         # -----------------------------------------------
         # If a CSV file is provided via the 'file' field in the request
+        file = request.files.get("file")
         if 'file' in request.files and request.files['file'].filename != '':
             # Read the file from the request
             file = request.files['file']
@@ -3798,8 +3955,8 @@ def olap_slice_dice():
         # --------------------------------
         else:
             # Show a warning message to the user
-            flash("Please upload a CSV file or a valid Google Sheets URL.", "warning")
             print(f"Please upload a CSV file or a valid Google Sheets URL.")
+            flash("Please upload a CSV file or a valid Google Sheets URL.", "warning")
             # Redirect the user to the home page
             return redirect(url_for('index'))
 
@@ -3807,13 +3964,10 @@ def olap_slice_dice():
         cat_cols = df.select_dtypes(include='object').columns
         num_cols = df.select_dtypes(include='number').columns
 
-        print("Numeric columns:", num_cols)
-        print("Categorical columns:", cat_cols)
-
         if len(cat_cols) == 0 or len(num_cols) == 0:
             return {"error": "CSV must include at least one categorical and one numeric column."}
 
-        # Gerar todas as combinações possíveis categórica × numérica
+        # Generate all possible categorical × numerical combinations
         combinations = []
         for cat in cat_cols:
             for num in num_cols:
@@ -3838,7 +3992,7 @@ def olap_slice_dice():
             ax.set_xlabel(cat)
             ax.set_ylabel(num)
 
-        # Apagar eixos não utilizados (caso o número de gráficos < total de subplots)
+        # Delete unused axes (in case the number of plots < total subplots)
         for j in range(len(combinations), len(axes)):
             fig.delaxes(axes[j])
 
@@ -3852,6 +4006,7 @@ def olap_slice_dice():
         file_lines = len(df) + 1
         file_columns = df.shape[1]
         collection_name = f"{business_id}notebook"
+        
         db_business[collection_name].insert_one(
                 {
                 "dataanalysis": "Olap Slice & Dice",
@@ -3860,7 +4015,7 @@ def olap_slice_dice():
                 "file_name": file.filename if file else sheet_url_olap_slice_dice,
                 "file_lines": file_lines,
                 "file_columns": file_columns,
-                "accessed_at": datetime.datetime.utcnow()
+                "accessed_at": datetime.now(timezone.utc)
                 }
             )
 
@@ -3926,6 +4081,7 @@ def olap_drilldown():
         if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify({"error": msg}), 401
         
+        print(msg)
         flash(msg, 'danger')
         return redirect(url_for('login'))
 
@@ -3933,6 +4089,7 @@ def olap_drilldown():
         # Case 1: CSV file upload
         # -----------------------------------------------
         # If a CSV file is provided via the 'file' field in the request
+        file = request.files.get("file")
         if 'file' in request.files and request.files['file'].filename != '':
             # Read the file from the request
             file = request.files['file']
@@ -3969,8 +4126,8 @@ def olap_drilldown():
         # --------------------------------
         else:
             # Show a warning message to the user
-            flash("Please upload a CSV file or a valid Google Sheets URL.", "warning")
             print(f"Please upload a CSV file or a valid Google Sheets URL.")
+            flash("Please upload a CSV file or a valid Google Sheets URL.", "warning")
             # Redirect the user to the home page
             return redirect(url_for('index'))
 
@@ -4049,7 +4206,7 @@ def olap_drilldown():
                     "file_name": file.filename if file else sheet_url_olap_drilldown,
                     "file_lines": file_lines,
                     "file_columns": file_columns,
-                    "accessed_at": datetime.datetime.utcnow()
+                    "accessed_at": datetime.now(timezone.utc)
                     }
                 )
 
@@ -4095,9 +4252,8 @@ def olap_pivot():
     user_name = session.get('username')
     business_id = session.get('business_id')
 
-    print(f"[DEBUG] User: {user_name}, Business ID: {business_id}")
-
     if not user_name or not business_id:
+        print("User not authenticated or missing business ID.")
         flash("User not authenticated or missing business ID.", 'danger')
         return redirect(url_for('login'))
 
@@ -4105,6 +4261,7 @@ def olap_pivot():
         # Case 1: CSV file upload
         # -----------------------------------------------
         # If a CSV file is provided via the 'file' field in the request
+        file = request.files.get("file")
         if 'file' in request.files and request.files['file'].filename != '':
             # Read the file from the request
             file = request.files['file']
@@ -4141,8 +4298,8 @@ def olap_pivot():
         # --------------------------------
         else:
             # Show a warning message to the user
-            flash("Please upload a CSV file or a valid Google Sheets URL.", "warning")
             print(f"Please upload a CSV file or a valid Google Sheets URL.")
+            flash("Please upload a CSV file or a valid Google Sheets URL.", "warning")
             # Redirect the user to the home page
             return redirect(url_for('index'))
         
@@ -4150,8 +4307,8 @@ def olap_pivot():
         num_cols = df.select_dtypes(include='number').columns
 
         if len(cat_cols) < 1 or len(num_cols) == 0:
-            flash("CSV must contain at least one categorical and one numeric column.", "error")
             print("CSV must contain at least one categorical and one numeric column.")
+            flash("CSV must contain at least one categorical and one numeric column.", "error")
             return redirect(url_for('data_analysis'))
         
         cat_combinations = list(itertools.combinations(cat_cols, 2)) + [(col,) for col in cat_cols]
@@ -4203,7 +4360,7 @@ def olap_pivot():
                 "file_name": file.filename if file else sheet_url_olap_pivot,
                 "file_lines": file_lines,
                 "file_columns": file_columns,
-                "accessed_at": datetime.datetime.utcnow()
+                "accessed_at": datetime.now(timezone.utc)
                 }
             )
 
@@ -4213,6 +4370,7 @@ def olap_pivot():
         return jsonify({"image": generate_error_image("Error processing the data. Please check your file or URL.")})
 
 @app.route('/visual_data', methods=['GET', 'POST'])
+@login_required
 def visual_data():
     """
     Handle visualization of uploaded CSV data.
@@ -4281,12 +4439,13 @@ def visual_data():
                             "file_name": file_or_url,
                             "file_lines": file_lines,
                             "file_columns": file_columns,
-                            "accessed_at": datetime.datetime.utcnow()
+                            "accessed_at": datetime.now(timezone.utc)
                             }
                         )
 
                 except Exception as e:
                     print(f"Could not save access log to MongoDB: {e}")
+                    flash("Could not save access log to Database.", 'danger')
 
                 # Render template with data and analysis
                 return render_template('visual_data.html',
@@ -4302,10 +4461,12 @@ def visual_data():
                                             "worksheet_title": worksheet_title
                                         })
             except Exception as e:
+                print(f"Error processing file: {e}")
                 flash(f"Error processing file: {e}", "danger")
                 return redirect(url_for('visual_data'))
 
         else:
+            print("Please upload a valid CSV file.")
             flash("Please upload a valid CSV file.", "danger")
             return redirect(url_for('visual_data'))
 
@@ -4316,6 +4477,7 @@ def visual_data():
                            user_data=user)
 
 @app.route('/visual_data_googlesheets', methods=['GET', 'POST'])
+@login_required
 def visual_data_googlesheets():
     """
     Handle visualization of data from a Google Sheets URL.
@@ -4385,7 +4547,7 @@ def visual_data_googlesheets():
                     "file_name": sheet_url,
                     "file_lines": file_lines,
                     "file_columns": file_columns,
-                    "accessed_at": datetime.datetime.utcnow()
+                    "accessed_at": datetime.now(timezone.utc)
                     }
                 )
             
@@ -4404,6 +4566,7 @@ def visual_data_googlesheets():
     return render_template("visual_data_googlesheets.html", analysis=None)
 
 @app.route('/notebook', methods=['GET', 'POST'])
+@login_required
 def notebook():
     """
     Display recent notebook activity logs and visual analytics for the logged-in user.
@@ -4468,11 +4631,13 @@ def notebook():
     # Apply date range filter if both dates are provided
     if start_date_str and end_date_str:
         try:
-            start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
-            end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
+            start_date = datetime.strptime(start_date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+            end_date = datetime.strptime(end_date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
             end_date = end_date.replace(hour=23, minute=59, second=59)
             query["accessed_at"] = {"$gte": start_date, "$lte": end_date}
+
         except ValueError:
+            print("Invalid date format. Please use YYYY-MM-DD.")
             flash("Invalid date format. Please use YYYY-MM-DD.", 'warning')
 
     # Handle pagination parameters
