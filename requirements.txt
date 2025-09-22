@@ -1,93 +1,54 @@
-# ========================
-# Web Framework
-# ========================
-# Flask and related tools for building web applications and handling forms
+# Web framework
+# Used to create the web server and handle web routes
 Flask==3.1.0
-Flask-WTF==1.2.1
+Flask-WTF==1.2.1  # Form validation and CSRF protection for Flask
 
-# ========================
-# LLMs and AI Integrations
-# ========================
-# OpenAI and LangChain ecosystem for language model operations and vector databases
-openai==1.63.0
-langchain>=0.1.0
-langchain-core==0.2.43
-langchain-openai>=0.1.0
-langchain-community>=0.0.17
-chromadb>=0.4.22
+# LLMs and AI
+# Libraries for interacting with language models and vector databases
+openai==1.63.0  # OpenAI's official Python library
+langchain>=0.1.0  # Framework to build apps powered by LLMs
+langchain-core==0.2.43  # Core components of LangChain
+langchain-openai>=0.1.0  # LangChain's integration with OpenAI
+langchain-community>=0.0.17  # Community-contributed integrations for LangChain
+chromadb>=0.4.22  # Vector database used with LLMs
+docling==2.28.4  # Tool to process and convert documents (e.g., PDF to Markdown)
+docling-core[chunking]==2.24.1  # Docling core module with document chunking
 
-# ========================
-# Document Processing
-# ========================
-# Libraries for converting and chunking documents
-docling==2.28.4
-docling-core[chunking]==2.24.1
-
-# ========================
-# NLP and Text Processing
-# ========================
-# Libraries for fuzzy matching and string similarity
+# NLP and text manipulation
+# For fuzzy matching and string similarity comparisons
 fuzzywuzzy==0.18.0
-python-Levenshtein==0.12.2
+python-Levenshtein==0.12.2  # Required for performance improvements in fuzzywuzzy
 
-# ========================
-# Data Analysis and Visualization
-# ========================
-# Libraries for handling, visualizing, and exporting data
-pandas==2.2.3
-seaborn==0.13.2
-matplotlib==3.8.4
-reportlab==4.0.6
-Pillow==10.3.0
+# Data and visualization
+# Libraries for data analysis, plots, and visual reports
+pandas==2.2.3  # Data manipulation and analysis
+seaborn==0.13.2  # Statistical data visualization
+reportlab==4.0.6  # PDF generation
+Pillow==10.3.0  # Image processing (required by reportlab or for QR code generation)
 
-# ========================
-# Backend and API Integration
-# ========================
-# Tools for database access, environment config, HTTP, and payments
-pymongo==4.11.1
-stripe==8.7.0
-python-dotenv==1.0.1
-requests==2.32.3
+# Backend and integrations
+# Database access, payments, and environment variable management
+pymongo==4.11.1  # MongoDB client
+stripe==8.7.0  # Stripe payment integration
+python-dotenv==1.0.1  # Load environment variables from .env file
 
-# ========================
-# Data Validation
-# ========================
-# Tools for structured data validation using type hints
-pydantic==2.7.1
-
-# ========================
-# Email and Communication
-# ========================
-# Library for sending transactional emails via SendGrid
-sendgrid==6.11.0
-
-# ========================
-# Google Sheets Integration
-# ========================
-# Tools for accessing and authenticating Google Sheets API
-gspread==6.0.2
-google-auth==2.29.0
-
-# ========================
-# Prototyping and Dashboarding
-# ========================
-# Frontend alternative for quick interactive dashboards and prototypes
+# Alternative frontend / prototyping
+# Used for quickly building web interfaces without HTML/CSS
 streamlit==1.40.1
 
-# ========================
-# 
-# ========================
-# 
-itsdangerous==2.2.0
+# Data validation
+# Useful for defining and validating structured data
+pydantic==2.7.1
 
-# ========================
-# 
-# ========================
-# 
-utils==1.0.2
+# Google Sheets API
+# Used to access and manipulate Google Sheets
+gspread==6.2.1
+google-auth  # Required for authentication with Google APIs
+google-auth-oauthlib  # OAuth library for Google services
 
-# ========================
-# Production Server
-# ========================
-# Gunicorn WSGI server for deploying Python web apps
+# Email API
+# Used to send transactional emails (e.g., confirmations, reports)
+sendgrid==6.11.0
+
+# WSGI HTTP server for running Flask in production
 gunicorn
